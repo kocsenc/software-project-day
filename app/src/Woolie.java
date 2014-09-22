@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * Created by Kocsen & Conor on 9/19/14.
  * Woolie crossing the bridge
@@ -29,7 +31,14 @@ public class Woolie extends Thread {
         }
         System.out.println(this.name + " leaves at " + this.destinationCity + ".");
     }
-
+    
+    public static void main(String[] args){
+    	ArrayList<Woolie> woolies = new ArrayList<Woolie>();
+    	for(int i=0; i<5; i++){
+    		woolies.add(new Woolie("Woolie-"+i, 10-i, "DatCity"));
+    		woolies.get(i).start();
+    	}
+    }
 
 }
 
