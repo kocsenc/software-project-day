@@ -27,12 +27,13 @@ public class Bridge {
     public synchronized void enterBridge(Woolie woolie) throws InterruptedException {
         woolieQueue.addLast(woolie);
 
-        // While bridge is full, woolie must wait
-        while (wooliesOnBridge >= MAX_CAPACITY) {
-            wait();
-        }
         // While woolie is not first, woolie must wait
         while (!woolieQueue.peek().equals(woolie)) {
+            wait();
+        }
+        // While bridge is full, woolie must wait
+        while (wooliesOnBridge >= MAX_CAPACITY) {
+            //System.out.println("\t\t\t" + woolie.name + "has to wait, bridge is full!");
             wait();
         }
 

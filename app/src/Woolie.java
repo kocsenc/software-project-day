@@ -11,6 +11,12 @@ public class Woolie extends Thread {
     public String destinationCity;
     private Bridge bridge;
 
+    /**
+     * @param name            - Name
+     * @param speed           - How fast in (s)
+     * @param destinationCity - destination city
+     * @param bridge          - Reference to bridge object
+     */
     Woolie(String name, int speed, String destinationCity, Bridge bridge) {
         this.name = name;
         this.speed = speed;
@@ -44,7 +50,7 @@ public class Woolie extends Thread {
     public static void main(String[] args) {
         ArrayList<Woolie> woolies = new ArrayList<>();
         Bridge b = new Bridge(3);
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= 9; i++) {
             Woolie addWoolie = new Woolie("Woolie-" + i, 10 - i, "DatCity", b);
             woolies.add(addWoolie);
             addWoolie.start();
