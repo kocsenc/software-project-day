@@ -20,13 +20,13 @@ public class Woolie extends Thread {
         int start = 0;
         System.out.println(this.name + " has arrived at the bridge.");
         boolean bool = false;
-        while(!bool){
-        	try {
+        while (!bool) {
+            try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        	bool = Bridge.enterBridge();
+            bool = Bridge.enterBridge();
         }
         System.out.println(this.name + " is starting to cross.");
         while (start != this.speed) {
@@ -41,13 +41,13 @@ public class Woolie extends Thread {
         System.out.println(this.name + " leaves at " + this.destinationCity + ".");
         Bridge.leaveBridge();
     }
-    
-    public static void main(String[] args){
-    	ArrayList<Woolie> woolies = new ArrayList<Woolie>();
-    	for(int i=0; i<5; i++){
-    		woolies.add(new Woolie("Woolie-"+i, 10-i, "DatCity", new Bridge()));
-    		woolies.get(i).start();
-    	}
+
+    public static void main(String[] args) {
+        ArrayList<Woolie> woolies = new ArrayList<Woolie>();
+        for (int i = 0; i < 5; i++) {
+            woolies.add(new Woolie("Woolie-" + i, 10 - i, "DatCity", new Bridge()));
+            woolies.get(i).start();
+        }
     }
 
 }
