@@ -50,7 +50,7 @@ public class Woolie extends Thread {
     public static void main(String[] args) {
         ArrayList<Woolie> woolies = new ArrayList<>();
         Bridge b = new Bridge(3);
-        for (int i = 1; i <= 9; i++) {
+        for (int i = 1; i <= 5; i++) {
             Woolie addWoolie = new Woolie("Woolie-" + i, 10 - i, "DatCity", b);
             woolies.add(addWoolie);
             addWoolie.start();
