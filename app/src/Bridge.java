@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -10,7 +9,7 @@ import java.util.LinkedList;
 public class Bridge {
     private final int MAX_CAPACITY;
 
-    private ArrayList<Woolie> wooliesOnBridge;
+    private int wooliesOnBridge;
     private LinkedList<Woolie> woolieQueue;
 
     /**
@@ -18,36 +17,38 @@ public class Bridge {
      */
     Bridge(int capacity) {
         this.MAX_CAPACITY = capacity;
-        this.wooliesOnBridge = new ArrayList<>();
+        this.wooliesOnBridge = 0;
         this.woolieQueue = new LinkedList<>();
     }
 
     /**
      * @param woolie - the woolie entering
-     * @return True or False depending if woolie on bridge or not
      */
-    public synchronized boolean enterBridge(Woolie woolie) throws InterruptedException {
+    public synchronized void enterBridge(Woolie woolie) throws InterruptedException {
         woolieQueue.addLast(woolie);
 
-        // While bridge is full & not first, tell woolie to wait
-        while (wooliesOnBridge.size() == MAX_CAPACITY && !woolieQueue.peek().equals(woolie)) {
-            woolie.wait();
+        // While bridge is full, woolie must wait
+        while (wooliesOnBridge >= MAX_CAPACITY) {
+            wait();
+        }
+        // While woolie is not first, woolie must wait
+        while (!woolieQueue.peek().equals(woolie)) {
+            wait();
         }
 
         // pop it from the stack and woolie to bridge
         woolieQueue.remove();
-        wooliesOnBridge.add(woolie);
-        woolie.notify();
-        return true;
+        wooliesOnBridge++;
+
+        notifyAll();
     }
 
     /**
      * Removes the woolie from the bridge array
-     * @param woolie - the woolie leaving
      */
-    public void leaveBridge(Woolie woolie) {
-        wooliesOnBridge.remove(woolie);
-        notify();
+    public synchronized void leaveBridge() {
+        wooliesOnBridge--;
+        notifyAll();
     }
 
 }

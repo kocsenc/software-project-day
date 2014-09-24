@@ -6,9 +6,9 @@ import java.util.ArrayList;
  */
 
 public class Woolie extends Thread {
-    private String name;
+    public String name;
     private int speed;
-    private String destinationCity;
+    public String destinationCity;
     private Bridge bridge;
 
     Woolie(String name, int speed, String destinationCity, Bridge bridge) {
@@ -37,18 +37,18 @@ public class Woolie extends Thread {
                 e.printStackTrace();
             }
         }
-        System.out.println(this.name + " leaves at " + this.destinationCity + ".");
-        bridge.leaveBridge(this);
+        System.out.println(this.name + " arrives at " + this.destinationCity + ".");
+        bridge.leaveBridge();
     }
 
     public static void main(String[] args) {
-        ArrayList<Woolie> woolies = new ArrayList<Woolie>();
+        ArrayList<Woolie> woolies = new ArrayList<>();
         Bridge b = new Bridge(3);
-        for (int i = 0; i < 5; i++) {
-            woolies.add(new Woolie("Woolie-" + i, 10 - i, "DatCity", b));
-            woolies.get(i).start();
+        for (int i = 1; i <= 5; i++) {
+            Woolie addWoolie = new Woolie("Woolie-" + i, 10 - i, "DatCity", b);
+            woolies.add(addWoolie);
+            addWoolie.start();
         }
     }
-
 }
 
