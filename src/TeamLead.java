@@ -1,5 +1,6 @@
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Team Lead Class
@@ -12,5 +13,7 @@ public class TeamLead extends Developer {
     private TeamLead teamLead;
     private ArrayList<Developer> developers;
 
-
+    public TeamLead(SoftwareProjectManager manager, Firm firm, List<Developer> developers) {
+        this.manager = manager;
+    }
 }
