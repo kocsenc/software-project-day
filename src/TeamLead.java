@@ -12,12 +12,11 @@ public class TeamLead extends Developer {
     private final SoftwareProjectManager manager;
     private final ArrayList<Developer> developers;
     private final Firm firm;
-    private long entered;
+    private boolean locked = false;
     
     // Waits
     private Condition waitForDevs = new Condition(){
-		@Override
-		private void isMet(){
+    	private boolean isMet(){
 			for(Developer dev : developers){
 				if(dev.entered==null){
 					return false;
@@ -25,17 +24,29 @@ public class TeamLead extends Developer {
 			}
 			return true;
 		}
-	}
+	};
+    private Condition waitForUnlock = new Condition(){
+    	private boolean isMet(){
+			return !locked;
+		}
+	};
 
     public TeamLead(SoftwareProjectManager manager, Firm firm, List<Developer> developers) {
         this.manager = manager;
         this.firm = firm;
-        this.developers = developers;
+        this.developers = (ArrayList<Developer>) developers;
     }
     
     public void run(){
-    	entered = time;
+    	this.entered = firm.getTime();
+    	manager.arrives(this);
+    	locked = true;
+    	waitForUnlock.waitUntilMet(100);
     	waitForDevs.waitUntilMet(100);
     	
+    }
+    
+    public void unlock(){
+    	locked = false;
     }
 }

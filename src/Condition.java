@@ -3,9 +3,13 @@ public class Condition {
 		return true;
 	}
 
-	public boolean waitUntilMet(long delay){
+	public void waitUntilMet(long delay){
 		while(!isMet()){
-			wait(delay);
+			try {
+				wait(delay);
+			} catch (InterruptedException e) {
+				
+			}
 		}
 	}
 }
