@@ -18,9 +18,9 @@ public class TeamLead extends Developer {
     private Condition waitForDevs = new Condition(){
     	private boolean isMet(){
 			for(Developer dev : developers){
-//				if(dev.entered==null){
-//					return false;
-//				}
+				if(dev.entered==null){
+					return false;
+				}
 			}
 			return true;
 		}
@@ -38,7 +38,7 @@ public class TeamLead extends Developer {
     }
     
     public void run(){
-    	//this.entered = firm.getTime();
+    	this.entered = firm.getTime();
     	manager.arrives(this);
     	locked = true;
     	waitForUnlock.waitUntilMet(100);
