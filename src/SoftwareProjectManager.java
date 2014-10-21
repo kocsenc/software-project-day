@@ -120,4 +120,21 @@ public class SoftwareProjectManager extends Thread {
 		// TODO: Implement
 	}
 
+	/**
+	 * Returns list of team leaders under the SPM.
+	 * @return list of team leaders under the SPM.
+	 */
+	public List<TeamLead> getTeamLeaders() {
+		return teamLeaders;
+	}
+
+	/**
+	 * Sets list of team leaders under the SPM.
+	 * @param teamLeaders
+	 *        List of team leaders under the SPM.  
+	 */
+	public void setTeamLeaders(List<TeamLead> teamLeaders) {
+		this.teamLeaders = teamLeaders;
+	}
+
 }
