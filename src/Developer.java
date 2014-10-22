@@ -6,6 +6,8 @@
 
 public class Developer extends Thread {
 
+    public boolean locked = false;
+
     public long entered; // Time entered
     public boolean arrived = false;
     public boolean askedQuestion = false;
