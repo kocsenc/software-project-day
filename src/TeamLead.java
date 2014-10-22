@@ -44,6 +44,20 @@ public class TeamLead extends Developer {
     	locked = true;
     	waitForUnlock.waitUntilMet(100);
     	waitForDevs.waitUntilMet(100);
+    	for(Developer dev : developers){
+            // TODO: Merge notes, we cant access varaibles, we need getters & setters.
+    		dev.locked = true;
+    	}
+    	this.locked = true;
+    	try {
+			Thread.sleep(1500);
+		} catch (InterruptedException e) {
+		}
+    	for(Developer dev : developers){
+    		dev.locked = false;
+    	}
+    	this.locked = false;
+    	
     	
     }
     

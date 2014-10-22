@@ -1,6 +1,6 @@
 /**
  * Developer Class
- * <p/>
+ *
  * Work on: Kocsen
  */
 
@@ -59,4 +59,10 @@ public class Developer extends Thread {
     public boolean getArrived() {
         return this.arrived;
     }
+    // Waits
+    protected Condition waitForUnlock = new Condition(){
+    	private boolean isMet(){
+			return !locked;
+		}
+	};
 }
