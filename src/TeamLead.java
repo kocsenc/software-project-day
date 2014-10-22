@@ -18,7 +18,7 @@ public class TeamLead extends Developer {
     private Condition waitForDevs = new Condition(){
     	private boolean isMet(){
 			for(Developer dev : developers){
-				if(dev.entered==null){
+				if(dev.entered==0){
 					return false;
 				}
 			}
