@@ -12,7 +12,6 @@ public class TeamLead extends Developer {
     private final SoftwareProjectManager manager;
     private final ArrayList<Developer> developers;
     private final Firm firm;
-    private boolean locked = false;
     
     // Waits
     private Condition waitForDevs = new Condition(){
@@ -23,11 +22,6 @@ public class TeamLead extends Developer {
 				}
 			}
 			return true;
-		}
-	};
-    private Condition waitForUnlock = new Condition(){
-    	private boolean isMet(){
-			return !locked;
 		}
 	};
 
@@ -43,6 +37,19 @@ public class TeamLead extends Developer {
     	locked = true;
     	waitForUnlock.waitUntilMet(100);
     	waitForDevs.waitUntilMet(100);
+    	for(Developer dev : developers){
+    		dev.locked = true;
+    	}
+    	this.locked = true;
+    	try {
+			Thread.sleep(1500);
+		} catch (InterruptedException e) {
+		}
+    	for(Developer dev : developers){
+    		dev.locked = false;
+    	}
+    	this.locked = false;
+    	
     	
     }
     
