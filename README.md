@@ -84,4 +84,4 @@ There must be no directories in the zip file - everything must be at the top-mos
 
 
 Software Project Manager Flow:
-![](https://raw.github.com/kocsenc/software-project-day/master/Images/SPM%20Flow%20Chart.png)]
+![](https://raw.github.com/kocsenc/software-project-day/master/Images/SPM%20Flow%20Chart.png)
