@@ -81,3 +81,7 @@ mechanisms for interacting with the program, any configurable constants and the 
 a description of the output produced.
 A PDF file Report.pdf addressing the issues and questions in the last paragraph of section Team Responsibility.
 There must be no directories in the zip file - everything must be at the top-most level.
+
+
+Software Project Manager Flow:
+![](https://raw.github.com/kocsenc/software-project-day/master/Images/SPM%20Flow%20Chart.png)]
