@@ -47,6 +47,14 @@ public class Developer extends Thread {
         }
     }
 
+    /**
+     * Setter for the firm
+     * @param firm
+     */
+    public void setFirm(Firm firm){
+        this.firm = firm;
+    }
+
     private void askQuestion() {
         if(!askedQuestion){
             this.teamLead.askedQuestion();
