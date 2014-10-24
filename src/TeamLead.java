@@ -10,20 +10,17 @@ import java.util.List;
 public class TeamLead {
     private final SoftwareProjectManager manager;
     private final ArrayList<Developer> developers;
-    // Waits
-    private Condition waitForDevs = new Condition() {
-        private boolean isMet() {
-            for (Developer dev : developers) {
-                if (!dev.getArrived()) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    };
+    private int devArrived = 0;
     public long entered;
     private Firm firm;
     private boolean locked = false;
+    
+    // Waits
+    private Condition waitForDevs = new Condition() {
+        private boolean isMet() {
+            return devArrived==3;
+        }
+    };
     private Condition waitForUnlock = new Condition() {
         private boolean isMet() {
             return !locked;
@@ -36,41 +33,50 @@ public class TeamLead {
         this.developers = (ArrayList<Developer>) developers;
     }
 
-    private void setFirm(Firm firm) {
+    public synchronized void setFirm(Firm firm) {
         this.firm = firm;
+    }
+    
+    public synchronized void knock(){
+    	try {
+			Thread.currentThread().wait();
+		} catch (InterruptedException e) {
+		}
+		this.devArrived+=1;
     }
 
     public void run() {
+    	try {
+			Thread.sleep(Util.randomInBetween(0, FirmTime.HALF_HOUR.ms()));
+		} catch (InterruptedException e1) {
+		}
         this.entered = firm.getTime();
-        manager.arrives(this);
-        locked = true;
-        waitForUnlock.waitUntilMet(100);
+        manager.knock();
+        
         waitForDevs.waitUntilMet(100);
-        for (Developer dev : developers) {
-            // TODO: Merge notes, we cant access varaibles, we need getters & setters.
-            dev.locked = true;
-        }
-        this.locked = true;
+        firm.attemptJoin();
         try {
-            Thread.sleep(1500);
+            Thread.sleep(15*FirmTime.MINUTE.ms());
         } catch (InterruptedException e) {
         }
+        firm.doneWithRoom();
         for (Developer dev : developers) {
-            dev.locked = false;
+            dev.notify();
         }
-        this.locked = false;
-
-
     }
 
-    public void unlock() {
+    public synchronized void unlock() {
         locked = false;
+    }
+
+    public synchronized void lock() {
+        locked = true;
     }
 
     /**
      * Developer calls this method when asking a question
      */
-    public void askedQuestion() {
+    public synchronized void askedQuestion() {
         // 50% chance of coming up with the answer
         boolean canIAnswer = Util.randomInBetween(0, 1) == 1;
         try {
@@ -87,8 +93,11 @@ public class TeamLead {
 
     }
 
-    public void askQuestion() {
+    public synchronized void askQuestion() {
         // TODO: This is what runs when we need to ask a question to the SPM
+    	this.lock();
+    	this.manager.askQuestion();
+    	this.waitForUnlock.waitUntilMet(100);
     }
 
     /**
