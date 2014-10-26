@@ -121,7 +121,7 @@ public class Firm {
 				while ( getTime() - firstStart < FirmTime.MINUTE.ms() * 15)
 				{
 					try {
-						Thread.currentThread().wait(FirmTime.MINUTE.ms() * 15 - (getTime() - firstStart));
+						wait(FirmTime.MINUTE.ms() * 15 - (getTime() - firstStart));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
