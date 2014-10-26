@@ -23,7 +23,6 @@ public class Main {
     	// Create Software Project Manager
     	SoftwareProjectManager spm = new SoftwareProjectManager();
 
-
     	// Create Team Leaders
     	for (int i=0; i < 3; i++) {
     		TeamLead l = new TeamLead("L" + i);
