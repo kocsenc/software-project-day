@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
@@ -56,13 +58,14 @@ public class SoftwareProjectManager extends Thread {
 	private final Object speakingToken;
 	private final Object wakeUp;
 	private final Object wakeUp2;
-	private AlarmClock alarm;
+	private Timer alarmClock;
+	private AlarmClockTask alarm;
 	public static final int STANDUP_LENGTH_MINS = 15;
 	public static final int EXEC_MEETING_LENGTH_MINS = 60;
 	public static final int ANSWER_QUESTION_LENGTH_MINS = 10;
-	public static final int TEN_AM_MEETING = 2;
-	public static final int TWO_PM_MEETING = 6;
-	public static final int FOUR_PM_MEETING = 8;
+	public static final int TEN_AM_MEETING = 2000;
+	public static final int TWO_PM_MEETING = 6000;
+	public static final int FOUR_PM_MEETING = 8000;
 
 	/**
 	 * No args constructor
@@ -73,6 +76,7 @@ public class SoftwareProjectManager extends Thread {
 		speakingToken = new Object();
 		wakeUp = new Object();
 		wakeUp2 = new Object();
+		alarmClock = new Timer(false);
 		awaitingAnswers = new ArrayList<Thread>();
 	}
 
@@ -178,25 +182,32 @@ public class SoftwareProjectManager extends Thread {
 		
 		
         // Wait until 4PM meeting
-        do {
-			// Set an alarm until the meeting... or someone asks a question
+		do {
+			System.out.println("Set an alarm for " + FOUR_PM_MEETING + " - " + firm.getTime() + "/" + FirmTime.HOUR.ms() + "ms");
+
+			// Cancel the current alarm and create a new AlarmClock
 			if (alarm != null) {
-				alarm.turnOff();
+				alarm.cancel();
 			}
-			// Set an alarm to wake me up
-			alarm = new AlarmClock(wakeUp2, (FOUR_PM_MEETING - (firm.getTime()/FirmTime.HOUR.ms())));
-			alarm.start();
+			
 			try {
-				synchronized(wakeUp2) {
-					System.out.println("Wait " + alarm.getDuration() + "ms 'till 4PM meeting");
-					wakeUp2.wait();
+				
+				synchronized(wakeUp) {
+					// Schedule a new alarm
+					alarmClock.schedule(alarm = new AlarmClockTask(wakeUp),
+							FOUR_PM_MEETING - (firm.getTime()/FirmTime.HOUR.ms()));
+
+					System.out.println("Now wait for the alarm");
+					wakeUp.wait(FOUR_PM_MEETING - (firm.getTime()/FirmTime.HOUR.ms()));
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-        } while(firm.getTime()/FirmTime.HOUR.ms() < FOUR_PM_MEETING);
+			System.out.println("I woke up");
+		} while(firm.getTime() < FOUR_PM_MEETING);
         
 		// Join 4PM Meeting
+		System.out.println("Manager attempting to join 4PM meeting");
         firm.attemptJoin();
 	}
 
@@ -263,46 +274,19 @@ public class SoftwareProjectManager extends Thread {
 				});
 	}
 
-	class AlarmClock extends Thread {
-		private boolean isOff = false;
+	
+	class AlarmClockTask extends TimerTask {
 		private Object lock;
-		private long duration;
-
-		public AlarmClock(Object lock, long duration) {
+		
+		public AlarmClockTask(Object lock) {
 			this.lock = lock;
-			this.duration = duration;
 		}
-
-		/*
-		 * Tell the alarm clock not to notify on wake up
-		 */
-		public void turnOff() {
-			isOff = true;
-		}
-
-		public long getDuration() {
-			return duration;
-		}
-
+		
 		@Override
 		public void run() {
-			try {
-				Thread.sleep(duration);
-			} catch (InterruptedException ignore) {
-				ignore.printStackTrace();
-			}
-
-			// If it isn't turned off, don't notify
-			if (!isOff) {
-				// Wake 'em up
-				synchronized(lock) {
-					System.out.println("****ALARM, ALARM, ALARM****");
-					lock.notify();
-				}
-			} else {
-				System.out.println("Alarm is off, not going to wake you up");
+			synchronized(lock) {
+				lock.notify();
 			}
 		}
 	}
-
 }
