@@ -36,7 +36,7 @@ public class Developer extends Thread {
             this.arrived = true;
             System.out.printf("Developer %s has arrived to the workplace at %d%n", name, entered);
 
-
+            teamLead.knock(); //Wait until meeting, release when meeting over
             // Randomly asking a question
             this.askQuestion();
 

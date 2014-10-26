@@ -52,14 +52,16 @@ public class TeamLead extends Thread {
 
     public void run() {
         try {
+            // Wait up to 30 mins
             Thread.sleep(Util.randomInBetween(0, FirmTime.HALF_HOUR.ms()));
 
+            // Arrive & knock on manager's door
             this.entered = firm.getTime();
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " arrives.");
-            manager.knock();
+            manager.knock(); // Locks until released from meeting
 
             waitForDevs.waitUntilMet(100);
-            firm.attemptJoin();
+            firm.attemptJoin(); // Lock until we have room empty
             Thread.sleep(15 * FirmTime.MINUTE.ms());
             firm.doneWithRoom();
             for (Developer dev : developers) {
