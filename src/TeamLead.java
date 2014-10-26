@@ -72,14 +72,17 @@ public class TeamLead extends Thread {
             firm.doneWithRoom();
             for (Developer dev : developers) {
                 synchronized (dev) {
-                    dev.notify();
+                	dev.unlock();
+                	synchronized (this) {
+                		notifyAll();
+                	}
                 }
             }
 
             // Wait until lunch
             while (firm.getTime() < FirmTime.HOUR.ms() * 4) {
                 synchronized (this) {
-                    wait(100);
+                    wait(10);
 
                 }
             }
@@ -92,17 +95,19 @@ public class TeamLead extends Thread {
             // Wait until end of the day meeting
             while (firm.getTime() < FirmTime.HOUR.ms() * 8) {
                 synchronized (this) {
-                    wait(100);
+                    wait(10);
                 }
             }
             // Alert manager?
+            lock();
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes to meeting.");
             firm.attemptJoin();
+            unlock();
 
             // finish and leave
             while (firm.getTime() - this.entered < 8 * FirmTime.HOUR.ms()) {
                 synchronized (this) {
-                    wait(100);
+                    wait(10);
                 }
             }
             lock();
@@ -116,7 +121,7 @@ public class TeamLead extends Thread {
     }
 
     public synchronized void lock() {
-        waitForUnlock.waitUntilMet(100);
+        waitForUnlock.waitUntilMet(10);
         locked = true;
     }
 

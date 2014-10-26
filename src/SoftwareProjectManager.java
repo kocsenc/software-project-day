@@ -188,7 +188,7 @@ public class SoftwareProjectManager extends Thread {
 			alarm.start();
 			try {
 				synchronized(wakeUp2) {
-					System.out.println("Wait " + alarm.getDuration() + "ms 'till 4PM meeting");
+					//System.out.println("Wait " + alarm.getDuration() + "ms 'till 4PM meeting");
 					wakeUp2.wait();
 				}
 			} catch (InterruptedException e) {
@@ -296,7 +296,7 @@ public class SoftwareProjectManager extends Thread {
 			if (!isOff) {
 				// Wake 'em up
 				synchronized(lock) {
-					System.out.println("****ALARM, ALARM, ALARM****");
+					//System.out.println("****ALARM, ALARM, ALARM****");
 					lock.notify();
 				}
 			} else {
