@@ -42,14 +42,21 @@ public class Developer extends Thread {
             this.arrived = true;
             System.out.printf("Developer %s has arrived to the workplace at %d%n", name, entered);
 
+            System.out.printf("Developer %s has knocked%n", name);
             teamLead.knock(); //Wait until meeting, release when meeting over
+            System.out.printf("Developer %s is done kocking%n", name);
+
 
             // Randomly asking a question
             //this.askQuestion();
 
+            System.out.printf("Developer %s will begin waiting until 4pm meeting%n", name);
             while (firm.getTime() < 8 * FirmTime.HOUR.ms()) {
                 Thread.sleep(FirmTime.MINUTE.ms());
             }
+            System.out.printf("Developer %s done waiting for 4pm meeting%n", name);
+
+
 
 
         } catch (InterruptedException e) {
