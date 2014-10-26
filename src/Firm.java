@@ -97,6 +97,11 @@ public class Firm {
 	public void startDay() {
 		addAllFirms();
 		startTime = System.currentTimeMillis();
+		
+		addAllFirms();
+		for ( Thread thread : threadDevs ) {
+			thread.start();
+		}
 
 	}
 	
