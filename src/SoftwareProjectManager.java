@@ -1,5 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
 
 /**
  * SoftwareProjectManager.java
@@ -43,48 +46,64 @@ import java.util.List;
  * 
  */
 
-/* TODO: verify I need to extend thread, pretty sure Firm is going to manage me */
 public class SoftwareProjectManager extends Thread {
 
 	private List<TeamLead> teamLeaders;
 	private boolean available = true;
-	private final Object knockLock = new Object();
+	private CyclicBarrier standupBarrier;
+	private Firm firm;
+	private List<Thread> awaitingAnswers;
+	private final Object speakingToken;
+	private final Object wakeUp;
+	private AlarmClock alarm;
+	public static final int STANDUP_LENGTH_MINS = 15;
+	public static final int EXEC_MEETING_LENGTH_MINS = 60;
+	public static final int ANSWER_QUESTION_LENGTH_MINS = 10;
+	public static final int TEN_AM_MEETING = 2;
+	public static final int TWO_PM_MEETING = 6;
 
 	/**
 	 * No args constructor
 	 */
 	public SoftwareProjectManager() {
 		super();
+
+		speakingToken = new Object();
+		wakeUp = new Object();
+		awaitingAnswers = new ArrayList<Thread>();
+	}
+
+	public void setFirm(Firm firm) {
+		this.firm = firm;
 	}
 
 	/**
-	 * A method that allows team leaders to knock on the door and initiate
-	 * a meeting with the SoftwareProjectManager.
+	 * A method that allows team leaders to knock on the door, when all
+	 * team leads arrive, the wait for the SPM will be released a meeting 
+	 * with the SoftwareProjectManager.
 	 */
 	public void knock() {
-		synchronized(knockLock) {
-			knockLock.notify();
+		// Add to the barrier
+		try {
+			standupBarrier.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (BrokenBarrierException e) {
+			e.printStackTrace();
 		}
+		System.out.println("SPM Enters morning Standup");
 	}
 
-	/* Method to wait for team leads to arrive at door */
-	private void dailyPlanning() throws InterruptedException {
-		// Tell the lock to wait, once notified, we'll continue
-		synchronized(knockLock) {
-			knockLock.wait();
-		}
-	}
-	
 	/* Perform the standup meeting */
 	private void performStandup() {
 		goUnavailable(FirmTime.MINUTE.ms()*15);
 	}
-	
+
 	/* Answer a question */
 	private void answerQuestion() {
 		goUnavailable(FirmTime.MINUTE.ms()*10);
 	}
-	
+
 	private void goUnavailable(long time) {
 		available = false;
 		try {
@@ -92,7 +111,7 @@ public class SoftwareProjectManager extends Thread {
 		} catch (InterruptedException ignore) { }
 		available = true;
 	}
-	
+
 	/**
 	 * @see Thread.java
 	 */
@@ -103,34 +122,91 @@ public class SoftwareProjectManager extends Thread {
 
 		// Wait for team leads to arrive
 		try {
-			dailyPlanning();
+			System.out.println("SPM engages in daily planning activities");
+			standupBarrier.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		} catch (BrokenBarrierException e) {
+			e.printStackTrace();
 		}
-		
+		System.out.println("SPM is out of morning stand-up");
+
+
+		// Wait for question OR next meeting (10:00AM or 2 "Hours")
+		do {
+			// Do I need to Answer Question?
+			synchronized(speakingToken) {
+				speakingToken.notify();
+			}
+
+
+			// Set an alarm until the meeting... or someone asks a question
+			if (alarm != null) {
+				alarm.turnOff();
+			}
+			// Set an alarm
+			alarm = new AlarmClock(wakeUp, (TEN_AM_MEETING - (firm.getTime()/FirmTime.HOUR.ms())));
+			alarm.start();
+			try {
+				synchronized(wakeUp) {
+					System.out.println("Wait " + alarm.getDuration() + "ms 'till next meeting");	
+					wakeUp.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			// Leave as soon as we've reached the meeting time or later
+			// Ignore anyone currently waiting for answers in this case
+		} while(firm.getTime()/FirmTime.HOUR.ms() < TEN_AM_MEETING);
+		// No more questions
+
+
+
 		// Start stand-up meeting
 		performStandup();
 
-		while(true) { // TODO: I thought FirmTime was going to keep track of actual time (Like, FirmTime.currentTime() return 5 for 5PM or whatever)
-			
+		while(firm.getTime()/FirmTime.HOUR.ms() < 9) { // TODO: I thought FirmTime was going to keep track of actual time (Like, FirmTime.currentTime() return 5 for 5PM or whatever)
+
 		}
-		
+
+		long time = firm.getTime();
 		// Leave at 5PM
 	}
-	
-	public synchronized void askQuestion() {
-		// TODO: need to keep order.
-		while(!available) {
+
+	public void askQuestion() {
+		// Current Thread
+		Thread teamLead = Thread.currentThread();
+
+		// If someone is already asking...
+		if (awaitingAnswers.size() >= 1) {
+			// Add teamLead to the list
+			awaitingAnswers.add(teamLead);
+		}
+
+		// Wait until they are next
+		do {
+			// Tell the threads to wait
 			try {
 				wait();
-			} catch (InterruptedException ignore) { }
+			} catch (InterruptedException e) { }
+		} while (teamLead != awaitingAnswers.get(0));
+
+		// If they're out, try to give them access to speak
+		synchronized(speakingToken) {
+			// Now that they have access
+			try {
+				Thread.sleep(FirmTime.MINUTE.ms()*ANSWER_QUESTION_LENGTH_MINS);
+			} catch (InterruptedException e) { }
+			
+			// Remove them from the list and notify the others.
+			awaitingAnswers.remove(0);
+			notifyAll();
 		}
-		available = false;
-		notify();
-		answerQuestion();
+
 	}
 
-	
+
 	/**
 	 * Returns list of team leaders under the SPM.
 	 * @return list of team leaders under the SPM.
@@ -146,19 +222,61 @@ public class SoftwareProjectManager extends Thread {
 	 */
 	public void setTeamLeaders(List<TeamLead> teamLeaders) {
 		this.teamLeaders = teamLeaders;
+		// Now we can set our barrier (allows dynamic # of TeamLeads)
+		// +1 because the SPM is part of the barrier
+		standupBarrier = new CyclicBarrier(
+				this.teamLeaders.size()+1, new Runnable() {
+					@Override
+					public void run() {
+						// Have stand-up
+						try {
+							System.out.println("We're in a meeting");
+							Thread.sleep(FirmTime.MINUTE.ms()*STANDUP_LENGTH_MINS);
+						} catch (InterruptedException ignore) { }
+					}
+				});
 	}
-	
-	/**
-	 * Adds a team leader to the SPM
-	 * @param lead the team leader to add
-	 */
-	public void addTeamLeader(TeamLead lead) {
-		if (teamLeaders == null) {
-			teamLeaders = new ArrayList<TeamLead>();
-		}
-		this.teamLeaders.add(lead);
-	}
-	
 
+	class AlarmClock extends Thread {
+		private boolean isOff = false;
+		private Object lock;
+		private long duration;
+
+		public AlarmClock(Object lock, long duration) {
+			this.lock = lock;
+			this.duration = duration;
+		}
+
+		/*
+		 * Tell the alarm clock not to notify on wake up
+		 */
+		public void turnOff() {
+			isOff = true;
+		}
+
+		public long getDuration() {
+			return duration;
+		}
+
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(duration);
+			} catch (InterruptedException ignore) {
+				ignore.printStackTrace();
+			}
+
+			// If it isn't turned off, don't notify
+			if (!isOff) {
+				// Wake 'em up
+				synchronized(lock) {
+					System.out.println("****ALARM, ALARM, ALARM****");
+					lock.notify();
+				}
+			} else {
+				System.out.println("Alarm is off, not going to wake you up");
+			}
+		}
+	}
 
 }
