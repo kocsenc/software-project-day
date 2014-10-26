@@ -25,6 +25,7 @@ public class Firm {
 	 */
 	public Firm(SoftwareProjectManager suPremeManager) {
 		devsInBigMeeting = new ArrayList<Thread>();
+		threadDevs = new ArrayList<Thread>();
 		firstStart = -15;
 		lastStart = -1;
 		this.suPremeManager = suPremeManager;
