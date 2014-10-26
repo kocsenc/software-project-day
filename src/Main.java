@@ -22,21 +22,18 @@ public class Main {
     	
     	// Create Software Project Manager
     	SoftwareProjectManager spm = new SoftwareProjectManager();
-    	// Create a firm
-    	Firm firm = new Firm(spm);
+    	
     	
     	
     	// Create Team Leaders
     	for (int i=0; i < 3; i++) {
     		TeamLead l = new TeamLead("L" + i);
     		l.setManager(spm);
-    		l.setFirm(firm);
     		leads.add(l);
     		
     		// Create developers and set everything
     		for (int j=0; j<3; j++) {
     			Developer d = new Developer("D" + (i+j) + 3*i);
-    			d.setFirm(firm);
     			d.setTeamLead(l);
     			l.addDeveloper(d);
     		}
@@ -46,6 +43,8 @@ public class Main {
     	// Set team leads
     	spm.setTeamLeaders(leads);
 
+    	// Create a firm
+    	Firm firm = new Firm(spm);
     	
     	// Start the application
     	firm.startDay();

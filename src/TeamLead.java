@@ -67,11 +67,15 @@ public class TeamLead extends Thread {
 
             waitForDevs.waitUntilMet(100);
             firm.attemptJoin(); // Lock until we have room empty
+            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " begins standup.");
             Thread.sleep(15 * FirmTime.MINUTE.ms());
+            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends standup.");
             firm.doneWithRoom();
             for (Developer dev : developers) {
                 dev.notify();
             }
+            
+            // Wait until lunch
             while (firm.getTime() < FirmTime.HOUR.ms() * 4) {
             	Thread.currentThread().wait(100);
             }
@@ -80,11 +84,16 @@ public class TeamLead extends Thread {
             Thread.sleep(FirmTime.MINUTE.ms() * (30 + (int) Math.random() * 30));
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends lunch.");
             unlock();
+            
+            // Wait until end of the day meeting
             while (firm.getTime() < FirmTime.HOUR.ms() * 8) {
                 Thread.currentThread().wait(100);
             }
             // Alert manager?
+            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes to meeting.");
             firm.attemptJoin();
+            
+            // finish and leave
             while (firm.getTime() - this.entered < 8 * FirmTime.HOUR.ms()) {
             	Thread.currentThread().wait(100);
             }
