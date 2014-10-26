@@ -21,13 +21,15 @@ public class Main {
 
     	// Create Team Leaders
     	for (int i=0; i < 3; i++) {
-    		TeamLead l = new TeamLead("L" + i);
+    		// TeamLead (Team, EmployeeNumber)
+    		TeamLead l = new TeamLead("TeamLead " + (i+1) + 1);
     		l.setManager(spm);
     		leads.add(l);
 
     		// Create developers and set everything
     		for (int j=0; j<3; j++) {
-    			Developer d = new Developer("D" + ((i+j) + 3*i));
+    			// Developer (Team, EmployeeNumber)
+    			Developer d = new Developer("Developer " + (i+1) + (j+2));
     			d.setTeamLead(l);
     			l.addDeveloper(d);
     		}
