@@ -31,15 +31,17 @@ public class Firm {
 		this.suPremeManager = suPremeManager;
 		threadDevs.add(suPremeManager);
 		this.leads = suPremeManager.getTeamLeaders();
+		for ( TeamLead lead : suPremeManager.getTeamLeaders() ) {
+			threadDevs.add(lead);
+			threadDevs.addAll(lead.getDevelopers());
+		}
 	}
 	
 	/**
 	 * Starts the simulation
 	 */
 	public void startDay() {
-		addAllFirms();
 		startTime = System.currentTimeMillis();
-		
 		addAllFirms();
 		for ( Thread thread : threadDevs ) {
 			thread.start();
@@ -98,12 +100,11 @@ public class Firm {
 					try {
 						//System.out.println("attending: "+Thread.currentThread().getName());
 						wait();
-					} catch (InterruptedException e) {
+					} catch (InterruptedException e) {}
 					}
 				}
 			}
 		}
-	}
 	
 	/**
 	 * Returns time since start in milliseconds.
