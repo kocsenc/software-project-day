@@ -138,60 +138,55 @@ public class SoftwareProjectManager extends Thread {
 		}
 		System.out.println("SPM is out of morning stand-up");
 
-//
-//		// Wait for question OR next meeting (10:00AM or 2 "Hours")
-//		do {
-//			// Do I need to Answer Question?
-//			synchronized(speakingToken) {
-//				speakingToken.notify();
-//			}
-//
-//
-//			// Set an alarm until the meeting... or someone asks a question
-//			if (alarm != null) {
-//				alarm.turnOff();
-//			}
-//			// Set an alarm
-//			alarm = new AlarmClock(wakeUp, (TEN_AM_MEETING - (firm.getTime()/FirmTime.HOUR.ms())));
-//			alarm.start();
-//			try {
-//				synchronized(wakeUp) {
-//					System.out.println("Wait " + alarm.getDuration() + "ms 'till 10AM meeting");
-//					wakeUp.wait();
-//				}
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-//
-//			// Leave as soon as we've reached the meeting time or later
-//			// Ignore anyone currently waiting for answers in this case
-//		} while(firm.getTime()/FirmTime.HOUR.ms() < TEN_AM_MEETING);
-//		// No more questions
+		//
+		//		// Wait for question OR next meeting (10:00AM or 2 "Hours")
+		//		do {
+		//			// Do I need to Answer Question?
+		//			synchronized(speakingToken) {
+		//				speakingToken.notify();
+		//			}
+		//
+		//
+		//			// Set an alarm until the meeting... or someone asks a question
+		//			if (alarm != null) {
+		//				alarm.turnOff();
+		//			}
+		//			// Set an alarm
+		//			alarm = new AlarmClock(wakeUp, (TEN_AM_MEETING - (firm.getTime()/FirmTime.HOUR.ms())));
+		//			alarm.start();
+		//			try {
+		//				synchronized(wakeUp) {
+		//					System.out.println("Wait " + alarm.getDuration() + "ms 'till 10AM meeting");
+		//					wakeUp.wait();
+		//				}
+		//			} catch (InterruptedException e) {
+		//				e.printStackTrace();
+		//			}
+		//
+		//			// Leave as soon as we've reached the meeting time or later
+		//			// Ignore anyone currently waiting for answers in this case
+		//		} while(firm.getTime()/FirmTime.HOUR.ms() < TEN_AM_MEETING);
+		//		// No more questions
 
 
 
-//		// Start stand-up meeting
-//		performStandup();
-//
-//		while(firm.getTime()/FirmTime.HOUR.ms() < 9) { // TODO: I thought FirmTime was going to keep track of actual time (Like, FirmTime.currentTime() return 5 for 5PM or whatever)
-//
-//		}
-//
-//		long time = firm.getTime();
-//		// Leave at 5PM
-		
-		
-        // Wait until 4PM meeting
+		//		// Start stand-up meeting
+		//		performStandup();
+		//
+		//		while(firm.getTime()/FirmTime.HOUR.ms() < 9) { // TODO: I thought FirmTime was going to keep track of actual time (Like, FirmTime.currentTime() return 5 for 5PM or whatever)
+		//
+		//		}
+		//
+		//		long time = firm.getTime();
+		//		// Leave at 5PM
+
+
+		// Wait until 4PM meeting
 		do {
-//			System.out.println("Set an alarm for " + FOUR_PM_MEETING + " - " + firm.getTime() + "/" + FirmTime.HOUR.ms() + "ms");
+			//			System.out.println("Set an alarm for " + FOUR_PM_MEETING + " - " + firm.getTime() + "/" + FirmTime.HOUR.ms() + "ms");
 
-			// Cancel the current alarm and create a new AlarmClock
-			if (alarm != null) {
-				alarm.cancel();
-			}
-			
 			try {
-				
+
 				synchronized(wakeUp) {
 					// Schedule a new alarm
 					alarmClock.schedule(alarm = new AlarmClockTask(wakeUp),
@@ -203,42 +198,43 @@ public class SoftwareProjectManager extends Thread {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			System.out.println("I woke up");
+			//			System.out.println("I woke up");
+
+			// Answer questions while there are still more or until it's time for a meeting
+			while (awaitingAnswers.size() != 0 && firm.getTime() < FOUR_PM_MEETING) {
+				TeamLead tl = (TeamLead) awaitingAnswers.remove(0);
+				// Lock the team leader object while we wait for the answer
+				try {
+					Thread.sleep(ANSWER_QUESTION_LENGTH_MINS);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				// Unlock the teamLeader so they can continue their business
+				tl.unlock();
+			}
+
+			// Cancel the current alarm and create a new AlarmClock
+			if (alarm != null) {
+				alarm.cancel();
+			}
+
 		} while(firm.getTime() < FOUR_PM_MEETING);
-        
+
 		// Join 4PM Meeting
 		System.out.println("Manager attempting to join 4PM meeting");
-        firm.attemptJoin();
+		firm.attemptJoin();
 	}
 
 	public void askQuestion() {
 		// Current Thread
-		Thread teamLead = Thread.currentThread();
+		TeamLead teamLead = (TeamLead) Thread.currentThread();
 
 		// If someone is already asking...
 		if (awaitingAnswers.size() >= 1) {
 			// Add teamLead to the list
 			awaitingAnswers.add(teamLead);
-		}
-
-		// Wait until they are next
-		do {
-			// Tell the threads to wait
-			try {
-				wait();
-			} catch (InterruptedException e) { }
-		} while (teamLead != awaitingAnswers.get(0));
-
-		// If they're out, try to give them access to speak
-		synchronized(speakingToken) {
-			// Now that they have access
-			try {
-				Thread.sleep(FirmTime.MINUTE.ms()*ANSWER_QUESTION_LENGTH_MINS);
-			} catch (InterruptedException e) { }
-			
-			// Remove them from the list and notify the others.
-			awaitingAnswers.remove(0);
-			notifyAll();
+			// Lock them so they have to wait
+			teamLead.lock();
 		}
 
 	}
@@ -274,14 +270,14 @@ public class SoftwareProjectManager extends Thread {
 				});
 	}
 
-	
+
 	class AlarmClockTask extends TimerTask {
 		private Object lock;
-		
+
 		public AlarmClockTask(Object lock) {
 			this.lock = lock;
 		}
-		
+
 		@Override
 		public void run() {
 			synchronized(lock) {
