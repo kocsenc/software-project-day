@@ -30,8 +30,7 @@ public class TeamLead extends Thread {
         }
     };
 
-    public TeamLead(String name, Firm firm) {
-        this.firm = firm;
+    public TeamLead(String name) {
         this.id = TeamLead.leads;
         TeamLead.leads += 1;
     }
@@ -120,7 +119,6 @@ public class TeamLead extends Thread {
             this.askQuestion();
             this.unlock();
         }
-
     }
 
     public synchronized void askQuestion() {
