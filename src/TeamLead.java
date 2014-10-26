@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Team Lead Class
@@ -9,10 +8,10 @@ import java.util.List;
 
 public class TeamLead extends Thread {
     private static int leads = 0;
-    private SoftwareProjectManager manager;
     private final ArrayList<Developer> developers = new ArrayList<Developer>();
     private final int id;
     public long entered;
+    private SoftwareProjectManager manager;
     private int devArrived = 0;
     // Waits
     private Condition waitForDevs = new Condition() {
@@ -34,13 +33,13 @@ public class TeamLead extends Thread {
         this.id = TeamLead.leads;
         TeamLead.leads += 1;
     }
-    
-    public synchronized void addDeveloper(Developer dev){
-    	developers.add(dev);
+
+    public synchronized void addDeveloper(Developer dev) {
+        developers.add(dev);
     }
-    
-    public synchronized void setManager(SoftwareProjectManager man){
-    	this.manager = man;
+
+    public synchronized void setManager(SoftwareProjectManager man) {
+        this.manager = man;
     }
 
     public synchronized void setFirm(Firm firm) {
@@ -72,30 +71,39 @@ public class TeamLead extends Thread {
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends standup.");
             firm.doneWithRoom();
             for (Developer dev : developers) {
-                dev.notify();
+                synchronized (dev) {
+                    dev.notify();
+                }
             }
-            
+
             // Wait until lunch
             while (firm.getTime() < FirmTime.HOUR.ms() * 4) {
-            	Thread.currentThread().wait(100);
+                synchronized (this) {
+                    wait(100);
+
+                }
             }
             lock();
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes on lunch.");
             Thread.sleep(FirmTime.MINUTE.ms() * (30 + (int) Math.random() * 30));
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends lunch.");
             unlock();
-            
+
             // Wait until end of the day meeting
             while (firm.getTime() < FirmTime.HOUR.ms() * 8) {
-                Thread.currentThread().wait(100);
+                synchronized (this) {
+                    wait(100);
+                }
             }
             // Alert manager?
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes to meeting.");
             firm.attemptJoin();
-            
+
             // finish and leave
             while (firm.getTime() - this.entered < 8 * FirmTime.HOUR.ms()) {
-            	Thread.currentThread().wait(100);
+                synchronized (this) {
+                    wait(100);
+                }
             }
             lock();
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes home.");
