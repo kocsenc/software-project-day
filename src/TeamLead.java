@@ -49,7 +49,7 @@ public class TeamLead extends Thread {
 
     public synchronized void knock() {
         try {
-            Thread.currentThread().wait();
+            wait();
         } catch (InterruptedException e) {
         }
         this.devArrived += 1;
