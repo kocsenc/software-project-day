@@ -68,7 +68,7 @@ public class TeamLead extends Thread {
                 dev.notify();
             }
             while (firm.getTime() < FirmTime.HOUR.ms() * 4) {
-                Thread.sleep(1000);
+            	Thread.currentThread().wait(100);
             }
             lock();
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes on lunch.");
@@ -76,12 +76,12 @@ public class TeamLead extends Thread {
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends lunch.");
             unlock();
             while (firm.getTime() < FirmTime.HOUR.ms() * 8) {
-                Thread.sleep(1000);
+                Thread.currentThread().wait(100);
             }
             // Alert manager?
             firm.attemptJoin();
             while (firm.getTime() - this.entered < 8 * FirmTime.HOUR.ms()) {
-                Thread.sleep(1000);
+            	Thread.currentThread().wait(100);
             }
             lock();
             System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes home.");
