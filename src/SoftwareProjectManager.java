@@ -205,16 +205,9 @@ public class SoftwareProjectManager extends Thread {
 			((TeamLead)tl).unlock();
 		}
 		
-		while(firm.getTime()<5400){
-			try {
-				synchronized (this){
-					wait(10);
-				}
-			} catch (InterruptedException e) {
-			}
-		}
+		
 		System.out.println(Util.timeToString(firm.getTime())+": Manager is going home");
-		System.exit(0);
+		alarmClock.cancel();
 	}
 
 	public void askQuestion() {
