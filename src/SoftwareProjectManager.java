@@ -132,34 +132,34 @@ public class SoftwareProjectManager extends Thread {
 		System.out.println("SPM is out of morning stand-up");
 
 
-		// Wait for question OR next meeting (10:00AM or 2 "Hours")
-		do {
-			// Do I need to Answer Question?
-			synchronized(speakingToken) {
-				speakingToken.notify();
-			}
-
-
-			// Set an alarm until the meeting... or someone asks a question
-			if (alarm != null) {
-				alarm.turnOff();
-			}
-			// Set an alarm
-			alarm = new AlarmClock(wakeUp, (TEN_AM_MEETING - (firm.getTime()/FirmTime.HOUR.ms())));
-			alarm.start();
-			try {
-				synchronized(wakeUp) {
-					System.out.println("Wait " + alarm.getDuration() + "ms 'till next meeting");	
-					wakeUp.wait();
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			// Leave as soon as we've reached the meeting time or later
-			// Ignore anyone currently waiting for answers in this case
-		} while(firm.getTime()/FirmTime.HOUR.ms() < TEN_AM_MEETING);
-		// No more questions
+//		// Wait for question OR next meeting (10:00AM or 2 "Hours")
+//		do {
+//			// Do I need to Answer Question?
+//			synchronized(speakingToken) {
+//				speakingToken.notify();
+//			}
+//
+//
+//			// Set an alarm until the meeting... or someone asks a question
+//			if (alarm != null) {
+//				alarm.turnOff();
+//			}
+//			// Set an alarm
+//			alarm = new AlarmClock(wakeUp, (TEN_AM_MEETING - (firm.getTime()/FirmTime.HOUR.ms())));
+//			alarm.start();
+//			try {
+//				synchronized(wakeUp) {
+//					System.out.println("Wait " + alarm.getDuration() + "ms 'till next meeting");
+//					wakeUp.wait();
+//				}
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//
+//			// Leave as soon as we've reached the meeting time or later
+//			// Ignore anyone currently waiting for answers in this case
+//		} while(firm.getTime()/FirmTime.HOUR.ms() < TEN_AM_MEETING);
+//		// No more questions
 
 
 
