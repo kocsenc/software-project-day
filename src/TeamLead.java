@@ -3,26 +3,30 @@ import java.util.List;
 
 /**
  * Team Lead Class
- * <p/>
+ *
  * Work on: Conor
  */
 
 public class TeamLead {
+	private static int leads = 0;
     private final SoftwareProjectManager manager;
     private final ArrayList<Developer> developers;
     private int devArrived = 0;
+    private final int id;
     public long entered;
     private Firm firm;
     private boolean locked = false;
     
     // Waits
     private Condition waitForDevs = new Condition() {
-        private boolean isMet() {
+        @SuppressWarnings("unused")
+		private boolean isMet() {
             return devArrived==3;
         }
     };
     private Condition waitForUnlock = new Condition() {
-        private boolean isMet() {
+        @SuppressWarnings("unused")
+		private boolean isMet() {
             return !locked;
         }
     };
@@ -31,6 +35,8 @@ public class TeamLead {
         this.manager = manager;
         this.firm = firm;
         this.developers = (ArrayList<Developer>) developers;
+        this.id = TeamLead.leads;
+        TeamLead.leads+=1;
     }
 
     public synchronized void setFirm(Firm firm) {
@@ -51,6 +57,7 @@ public class TeamLead {
 		} catch (InterruptedException e1) {
 		}
         this.entered = firm.getTime();
+        System.out.println(firm.getTime()+": TeamLead #"+this.id+" arrives.");
         manager.knock();
         
         waitForDevs.waitUntilMet(100);
@@ -63,6 +70,35 @@ public class TeamLead {
         for (Developer dev : developers) {
             dev.notify();
         }
+        while(firm.getTime()<FirmTime.HOUR.ms()*4){
+        	try {
+        		Thread.sleep(1000);
+        	} catch (InterruptedException e) {
+        	}
+        }
+        lock();
+        System.out.println(firm.getTime()+": TeamLead #"+this.id+" goes on lunch.");
+        try{
+        	Thread.sleep(FirmTime.MINUTE.ms()*(30+(int)Math.random()*30));
+        } catch(InterruptedException e){}
+        System.out.println(firm.getTime()+": TeamLead #"+this.id+" ends lunch.");
+        unlock();
+        while(firm.getTime()<FirmTime.HOUR.ms()*8){
+        	try {
+        		Thread.sleep(1000);
+        	} catch (InterruptedException e) {
+        	}
+        }
+        // Alert manager?
+        firm.attemptJoin();
+        while(firm.getTime()-this.entered<8*FirmTime.HOUR.ms()){
+        	try {
+        		Thread.sleep(1000);
+        	} catch (InterruptedException e) {
+        	}
+        }
+        lock();
+        System.out.println(firm.getTime()+": TeamLead #"+this.id+" goes home.");
     }
 
     public synchronized void unlock() {
@@ -70,6 +106,7 @@ public class TeamLead {
     }
 
     public synchronized void lock() {
+        waitForUnlock.waitUntilMet(100);
         locked = true;
     }
 
@@ -78,26 +115,24 @@ public class TeamLead {
      */
     public synchronized void askedQuestion() {
         // 50% chance of coming up with the answer
+    	this.waitForUnlock.waitUntilMet(100);
         boolean canIAnswer = Util.randomInBetween(0, 1) == 1;
-        try {
-            // 10 minute wait
-            Thread.sleep(FirmTime.MINUTE.ms() * 10);
-            // See if we need to talk to the SPM incase we don't know the answer
-            if (!canIAnswer) {
-                this.askQuestion();
-            }
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        
+        // 10 minute wait only applies for the manager
+        //Thread.sleep(FirmTime.MINUTE.ms() * 10);
+        // See if we need to talk to the SPM incase we don't know the answer
+        if (!canIAnswer) {
+        	this.lock();
+            this.askQuestion();
+            this.unlock();
         }
 
     }
 
     public synchronized void askQuestion() {
-        // TODO: This is what runs when we need to ask a question to the SPM
-    	this.lock();
+        this.lock();
     	this.manager.askQuestion();
-    	this.waitForUnlock.waitUntilMet(100);
+    	unlock();
     }
 
     /**
@@ -105,7 +140,7 @@ public class TeamLead {
      *
      * @return list of developers under this team lead.
      */
-    public ArrayList<Developer> getDevelopers() {
+    public synchronized ArrayList<Developer> getDevelopers() {
         return developers;
     }
 }

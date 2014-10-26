@@ -266,4 +266,9 @@ public class Firm {
 			}
 		}
 	}
+
+	public void doneWithRoom() {
+		// TODO Auto-generated method stub
+		
+	}
 }
