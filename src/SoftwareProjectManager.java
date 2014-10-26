@@ -212,7 +212,7 @@ public class SoftwareProjectManager extends Thread {
 
 	public void askQuestion() {
 		// Current Thread
-		TeamLead teamLead = (TeamLead) Thread.currentThread();
+		Developer teamLead = (Developer) Thread.currentThread();
 
 		// If someone is already asking...
 		if (awaitingAnswers.size() >= 1) {
@@ -220,6 +220,12 @@ public class SoftwareProjectManager extends Thread {
 			awaitingAnswers.add(teamLead);
 			// Lock them so they have to wait
 			teamLead.lock();
+			synchronized (this) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+				}
+			}
 		}
 
 	}

@@ -67,7 +67,7 @@ public class Developer extends Thread {
             while (firm.getTime() < 8 * FirmTime.HOUR.ms()) {
                 Thread.sleep(FirmTime.MINUTE.ms());
                 // Randomly asking a question
-                if(Math.random()*1000<1){
+                if(Math.random()*500<1){
                 	this.askQuestion();
                 }
             }
