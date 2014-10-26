@@ -15,19 +15,18 @@ public class Firm {
 	private List<Thread> threadDevs;
 	private List<Thread> threadLeads;
 	private long startTime;
-	private boolean conferenceRoomFree;
-	private List<TeamLead> roomQ;
-	private long timeInQ;
+	private long firstStart;
 	private long lastStart;
+	private List<Thread> devsInBigMeeting;
 
 	/**
 	 * @param suPremeManager
 	 *        SoftwareProjectManager that's head of the office
 	 */
 	public Firm(SoftwareProjectManager suPremeManager) {
-		timeInQ = 0;
-		lastStart = -15;
-		this.roomQ = new ArrayList<TeamLead>();
+		devsInBigMeeting = new ArrayList<Thread>();
+		firstStart = -15;
+		lastStart = -1;
 		this.suPremeManager = suPremeManager;
 		threadDevs.add(suPremeManager);
 		this.leads = suPremeManager.getTeamLeaders();
@@ -108,91 +107,37 @@ public class Firm {
 	 * thread is in.  True otherwise.  
 	 * @return False if there is no current meeting the thread is in.  True otherwise.  
 	 */
-	public boolean attemptJoin() {
-		synchronized(this){
-			while ( getTime() - lastStart < FirmTime.MINUTE.ms() * 15)
-			{
-				try {
-					Thread.currentThread().wait(FirmTime.MINUTE.ms() * 15 - (getTime() - lastStart));
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+	public void attemptJoin() {
+		if ( getTime() < FirmTime.HOUR.ms() * 8 - 10) {
+			synchronized(this){
+				while ( getTime() - firstStart < FirmTime.MINUTE.ms() * 15)
+				{
+					try {
+						Thread.currentThread().wait(FirmTime.MINUTE.ms() * 15 - (getTime() - firstStart));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				firstStart = getTime();
+			}
+		}
+		
+		else {
+			synchronized(this) {
+				this.devsInBigMeeting.add(Thread.currentThread());
+				if ( devsInBigMeeting.size() == threadDevs.size() ) {
+					lastStart = getTime();
+					try {
+						wait(FirmTime.MINUTE.ms() * 15);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					notifyAll();
 				}
 			}
-			lastStart = getTime();
 		}
-		return true;
-//		Meeting meeting = currentMeeting();
-//		return meeting.attemptJoin();
 	}
-
-	/**
-	 * Returns time until the soonest the next meeting starts for the current thread in milliseconds.
-	 * @return Time until the soonest the next meeting starts for the current thread in milliseconds.
-	 */
-	public synchronized long getTimeUntilNextMeetingSuggestedStart() {
-		long timeUntil = 5400;
-		for (Meeting meeting : meetings) {
-			if (timeUntil > meeting.timeUntilScheduledStart()) {
-				timeUntil = meeting.timeUntilScheduledStart();
-			}
-		}
-		return timeUntil;
-	}
-
-	/**
-	 * Returns time until the latest the next meeting starts for the current thread in milliseconds.
-	 * @return Time until the latest the next meeting starts for the current thread in milliseconds.
-	 */
-	public synchronized long getTimeUntilNextMeetingMustStart() {
-		long timeUntil = 5400;
-		for (Meeting meeting : meetings) {
-			if (timeUntil > meeting.timeUntilMustStart()) {
-				timeUntil = meeting.timeUntilMustStart();
-			}
-		}
-		return timeUntil;
-	}
-
-	/**
-	 * Returns true if the current thread currently is (or should be) in a meeting.
-	 * @return True if the current thread currently is (or should be) in a meeting.
-	 */
-	public synchronized boolean inMeeting() {
-		if (currentMeeting() == null) {
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	 * Returns time left in the current meeting that the thread is in. 0 if there is no meeting.  
-	 * Returns the meeting's duration, if the meeting has not actually started yet.  
-	 * @return Time left in the current meeting that the thread is in, 0 if there is no meeting,
-	 *         and the meeting's duration, if the meeting has not actually started yet.  
-	 */
-	public synchronized long timeLeft() {
-		Meeting meeting = currentMeeting();
-		if (meeting == null) {
-			return 0;
-		}
-		return meeting.estimatedTimeUntilEnd();
-	}
-
-	/**
-	 * Returns the meeting that the current thread should be in.  Null if no meeting fulfills that criterion.
-	 * @return The meeting that the current thread should be in.  Null if no meeting fulfills that criterion.
-	 */
-	private synchronized Meeting currentMeeting() {
-		Thread dev = Thread.currentThread();
-		for (Meeting meeting : meetings) {
-			if (meeting.currentlyRunning()
-					&& meeting.devsRequired.contains(dev)) {
-				return meeting;
-			}
-		}
-		return null;
-	}
-
+	
 	/**
 	 * Returns time since start in milliseconds.
 	 * @return Time since start in milliseconds.
@@ -201,10 +146,87 @@ public class Firm {
 		long currentTime = System.currentTimeMillis() - startTime;
 		return currentTime;
 	}
+	
+	public synchronized boolean isLastMeetingDone() {
+		if ( lastStart == -1 || getTime() - lastStart < FirmTime.MINUTE.ms() * 15 ) {
+			return false;
+		}
+		return true;
+	}
 
-	/**
-	 * Representation of a meeting.
-	 */
+//	/**
+//	 * Returns time until the soonest the next meeting starts for the current thread in milliseconds.
+//	 * @return Time until the soonest the next meeting starts for the current thread in milliseconds.
+//	 */
+//	public synchronized long getTimeUntilNextMeetingSuggestedStart() {
+//		long timeUntil = 5400;
+//		for (Meeting meeting : meetings) {
+//			if (timeUntil > meeting.timeUntilScheduledStart()) {
+//				timeUntil = meeting.timeUntilScheduledStart();
+//			}
+//		}
+//		return timeUntil;
+//	}
+//
+//	/**
+//	 * Returns time until the latest the next meeting starts for the current thread in milliseconds.
+//	 * @return Time until the latest the next meeting starts for the current thread in milliseconds.
+//	 */
+//	public synchronized long getTimeUntilNextMeetingMustStart() {
+//		long timeUntil = 5400;
+//		for (Meeting meeting : meetings) {
+//			if (timeUntil > meeting.timeUntilMustStart()) {
+//				timeUntil = meeting.timeUntilMustStart();
+//			}
+//		}
+//		return timeUntil;
+//	}
+//
+//	/**
+//	 * Returns true if the current thread currently is (or should be) in a meeting.
+//	 * @return True if the current thread currently is (or should be) in a meeting.
+//	 */
+//	public synchronized boolean inMeeting() {
+//		if (currentMeeting() == null) {
+//			return false;
+//		}
+//		return true;
+//	}
+//
+//	/**
+//	 * Returns time left in the current meeting that the thread is in. 0 if there is no meeting.  
+//	 * Returns the meeting's duration, if the meeting has not actually started yet.  
+//	 * @return Time left in the current meeting that the thread is in, 0 if there is no meeting,
+//	 *         and the meeting's duration, if the meeting has not actually started yet.  
+//	 */
+//	public synchronized long timeLeft() {
+//		Meeting meeting = currentMeeting();
+//		if (meeting == null) {
+//			return 0;
+//		}
+//		return meeting.estimatedTimeUntilEnd();
+//	}
+//
+//	/**
+//	 * Returns the meeting that the current thread should be in.  Null if no meeting fulfills that criterion.
+//	 * @return The meeting that the current thread should be in.  Null if no meeting fulfills that criterion.
+//	 */
+//	private synchronized Meeting currentMeeting() {
+//		Thread dev = Thread.currentThread();
+//		for (Meeting meeting : meetings) {
+//			if (meeting.currentlyRunning()
+//					&& meeting.devsRequired.contains(dev)) {
+//				return meeting;
+//			}
+//		}
+//		return null;
+//	}
+//
+
+//
+//	/**
+//	 * Representation of a meeting.
+//	 */
 	private class Meeting {
 
 		/** When the meeting is scheduled to start in milliseconds from start */
@@ -244,75 +266,75 @@ public class Firm {
 			this.actualStart = -1;
 		}
 
-		/**
-		 * Returns time until the meeting should start.
-		 * @return Time until the meeting should start.
-		 */
-		public synchronized long timeUntilScheduledStart() {
-			long timeUntil = scheduledStart - getTime();
-			return timeUntil;
-		}
-
-		/**
-		 * Returns time until the meeting MUST start.
-		 * @return Time until the meeting MUST start.
-		 */
-		public synchronized long timeUntilMustStart() {
-			long timeUntil = scheduledStart + leeway - getTime();
-			return timeUntil;
-		}
-
-		/**
-		 * Current thread attempts to join this meeting.
-		 * @return True if current thread is a member of this meeting and meeting is currently running.
-		 */
-		public synchronized boolean attemptJoin() {
-			Thread dev = Thread.currentThread();
-			if (devsRequired.contains(dev)) {
-				if (!devsPresent.contains(dev)) {
-					devsPresent.add(dev);
-					if (devsPresent.size() == devsRequired.size()) {
-						this.actualStart = getTime();
-						notifyAll();
-					}
-				}
-				return true;
-			}
-			return false;
-		}
-
-		/**
-		 * Returns true if the meeting is currently running. 
-		 * @return True if the meeting is currently running. 
-		 */
-		public synchronized boolean currentlyRunning() {
-			if (getTime() > scheduledStart) { // scheduled start is before the
-												// current time
-				if (actualStart == -1) { // meeting should be starting, but not
-											// everyone's here
-					return true;
-				}
-				if (actualStart + duration < getTime()) { // meeting started and
-															// has not yet
-															// reached duration
-					return true;
-				}
-			}
-			return false;
-		}
-
-		/**
-		 * How long until the meeting ends.  Returns duration, if it has not started yet. 
-		 * @return How long until the meeting ends.  Returns duration, if it has not started yet. 
-		 */
-		public synchronized long estimatedTimeUntilEnd() {
-			if (actualStart != -1) {
-				long ete = (actualStart + duration) - getTime();
-				return ete;
-			} else {
-				return duration;
-			}
-		}
+//		/**
+//		 * Returns time until the meeting should start.
+//		 * @return Time until the meeting should start.
+//		 */
+//		public synchronized long timeUntilScheduledStart() {
+//			long timeUntil = scheduledStart - getTime();
+//			return timeUntil;
+//		}
+//
+//		/**
+//		 * Returns time until the meeting MUST start.
+//		 * @return Time until the meeting MUST start.
+//		 */
+//		public synchronized long timeUntilMustStart() {
+//			long timeUntil = scheduledStart + leeway - getTime();
+//			return timeUntil;
+//		}
+//
+//		/**
+//		 * Current thread attempts to join this meeting.
+//		 * @return True if current thread is a member of this meeting and meeting is currently running.
+//		 */
+//		public synchronized boolean attemptJoin() {
+//			Thread dev = Thread.currentThread();
+//			if (devsRequired.contains(dev)) {
+//				if (!devsPresent.contains(dev)) {
+//					devsPresent.add(dev);
+//					if (devsPresent.size() == devsRequired.size()) {
+//						this.actualStart = getTime();
+//						notifyAll();
+//					}
+//				}
+//				return true;
+//			}
+//			return false;
+//		}
+//
+//		/**
+//		 * Returns true if the meeting is currently running. 
+//		 * @return True if the meeting is currently running. 
+//		 */
+//		public synchronized boolean currentlyRunning() {
+//			if (getTime() > scheduledStart) { // scheduled start is before the
+//												// current time
+//				if (actualStart == -1) { // meeting should be starting, but not
+//											// everyone's here
+//					return true;
+//				}
+//				if (actualStart + duration < getTime()) { // meeting started and
+//															// has not yet
+//															// reached duration
+//					return true;
+//				}
+//			}
+//			return false;
+//		}
+//
+//		/**
+//		 * How long until the meeting ends.  Returns duration, if it has not started yet. 
+//		 * @return How long until the meeting ends.  Returns duration, if it has not started yet. 
+//		 */
+//		public synchronized long estimatedTimeUntilEnd() {
+//			if (actualStart != -1) {
+//				long ete = (actualStart + duration) - getTime();
+//				return ete;
+//			} else {
+//				return duration;
+//			}
+//		}
 	}
 
 	public void doneWithRoom() {
