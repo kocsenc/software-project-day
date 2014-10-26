@@ -77,15 +77,15 @@ public class TeamLead extends Thread {
 
             // Arrive & knock on manager's door
             this.entered = firm.getTime();
-            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " arrives.");
+            System.out.println(Util.timeToString(firm.getTime())+": TeamLead #" + this.id + " arrives.");
             manager.knock(); // Locks until released from meeting
             
             // Wait for the developers and start standup
             waitForDevs.waitUntilMet(10);
             firm.attemptJoin(); // Lock until we have room empty
-            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " begins standup.");
+            System.out.println(Util.timeToString(firm.getTime())+": TeamLead #" + this.id + " begins standup.");
             Thread.sleep(15 * FirmTime.MINUTE.ms());
-            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends standup.");
+            System.out.println(Util.timeToString(firm.getTime())+": TeamLead #" + this.id + " ends standup.");
             
             // End Standup
             for (Developer dev : developers) {
@@ -107,9 +107,9 @@ public class TeamLead extends Thread {
             
             // Go to lunch
             lock();
-            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes on lunch.");
+            System.out.println(Util.timeToString(firm.getTime())+": TeamLead #" + this.id + " goes on lunch.");
             Thread.sleep(FirmTime.MINUTE.ms() * (30 + (int) Math.random() * 30));
-            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends lunch.");
+            System.out.println(Util.timeToString(firm.getTime())+": TeamLead #" + this.id + " ends lunch.");
             unlock();
 
             // Wait until end of the day meeting
@@ -121,7 +121,7 @@ public class TeamLead extends Thread {
             
             // Attend Meeting
             lock();
-            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes to meeting.");
+            System.out.println(Util.timeToString(firm.getTime())+": TeamLead #" + this.id + " goes to meeting.");
             firm.attemptJoin();
             unlock();
 
@@ -132,7 +132,7 @@ public class TeamLead extends Thread {
                 }
             }
             lock();
-            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes home.");
+            System.out.println(Util.timeToString(firm.getTime())+": TeamLead #" + this.id + " goes home.");
         } catch (InterruptedException e1) {
         }
     }
@@ -158,7 +158,7 @@ public class TeamLead extends Thread {
     public synchronized void askedQuestion() {
         // 50% chance of coming up with the answer
         this.waitForUnlock.waitUntilMet(10);
-        boolean canIAnswer = Util.randomInBetween(0, 1) != 2;
+        boolean canIAnswer = Util.randomInBetween(0, 1) != 1;
 
         // 10 minute wait only applies for the manager
         //Thread.sleep(FirmTime.MINUTE.ms() * 10);

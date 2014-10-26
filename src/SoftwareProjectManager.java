@@ -51,13 +51,10 @@ import java.util.concurrent.CyclicBarrier;
 public class SoftwareProjectManager extends Thread {
 
 	private List<TeamLead> teamLeaders;
-	private boolean available = true;
 	private CyclicBarrier standupBarrier;
 	private Firm firm;
 	private List<Thread> awaitingAnswers;
-	private final Object speakingToken;
 	private final Object wakeUp;
-	private final Object wakeUp2;
 	private Timer alarmClock;
 	private AlarmClockTask alarm;
 	public static final int STANDUP_LENGTH_MINS = 15;
@@ -73,9 +70,7 @@ public class SoftwareProjectManager extends Thread {
 	public SoftwareProjectManager() {
 		super();
 
-		speakingToken = new Object();
 		wakeUp = new Object();
-		wakeUp2 = new Object();
 		alarmClock = new Timer(false);
 		awaitingAnswers = new ArrayList<Thread>();
 	}
@@ -91,6 +86,7 @@ public class SoftwareProjectManager extends Thread {
 	 */
 	public void knock() {
 		// Add to the barrier
+		System.out.println("A TeamLead knocked on SPM's door");
 		try {
 			standupBarrier.await();
 		} catch (InterruptedException e) {
@@ -98,25 +94,6 @@ public class SoftwareProjectManager extends Thread {
 		} catch (BrokenBarrierException e) {
 			e.printStackTrace();
 		}
-		System.out.println("SPM Enters morning Standup");
-	}
-
-	/* Perform the standup meeting */
-	private void performStandup() {
-		goUnavailable(FirmTime.MINUTE.ms()*15);
-	}
-
-	/* Answer a question */
-	private void answerQuestion() {
-		goUnavailable(FirmTime.MINUTE.ms()*10);
-	}
-
-	private void goUnavailable(long time) {
-		available = false;
-		try {
-			Thread.sleep(time);
-		} catch (InterruptedException ignore) { }
-		available = true;
 	}
 
 	/**
@@ -124,19 +101,18 @@ public class SoftwareProjectManager extends Thread {
 	 */
 	public void run() {
 		// Arrive at Firm.java at 8AM (by default, nothing to do here)
-		// I'm available
-		available = true;
+
 
 		// Wait for team leads to arrive
 		try {
-			System.out.println("SPM engages in daily planning activities");
+			System.out.println(Util.timeToString(firm.getTime())+": SPM engages in daily planning activities");
 			standupBarrier.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (BrokenBarrierException e) {
 			e.printStackTrace();
 		}
-		System.out.println("SPM is out of morning stand-up");
+		System.out.println(Util.timeToString(firm.getTime())+": SPM is out of morning stand-up");
 
 		//
 		//		// Wait for question OR next meeting (10:00AM or 2 "Hours")
@@ -221,9 +197,24 @@ public class SoftwareProjectManager extends Thread {
 		} while(firm.getTime() < FOUR_PM_MEETING);
 
 		// Join 4PM Meeting
-		System.out.println("Manager attempting to join 4PM meeting");
+		System.out.println(Util.timeToString(firm.getTime())+": Manager attempting to join 4PM meeting");
 		firm.attemptJoin();
-		System.out.println("Manager Going home");
+		
+		// TODO: This is only test
+		for (Thread tl : awaitingAnswers) {
+			((TeamLead)tl).unlock();
+		}
+		
+		while(firm.getTime()<5400){
+			try {
+				synchronized (this){
+					wait(10);
+				}
+			} catch (InterruptedException e) {
+			}
+		}
+		System.out.println(Util.timeToString(firm.getTime())+": Manager is going home");
+		System.exit(0);
 	}
 
 	public void askQuestion() {
@@ -264,7 +255,7 @@ public class SoftwareProjectManager extends Thread {
 					public void run() {
 						// Have stand-up
 						try {
-							System.out.println("We're in a meeting");
+							System.out.println(Util.timeToString(firm.getTime())+": We're in a meeting");
 							Thread.sleep(FirmTime.MINUTE.ms()*STANDUP_LENGTH_MINS);
 						} catch (InterruptedException ignore) { }
 					}

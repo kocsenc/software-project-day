@@ -41,14 +41,14 @@ public class Developer extends Thread {
             // Arrive
             this.entered = firm.getTime();
             this.arrived = true;
-            System.out.printf("Developer %s has arrived to the workplace at %d%n", name, entered);
+            System.out.printf(Util.timeToString(firm.getTime())+": Developer %s has arrived to the workplace at %d%n", name, entered);
 
-            System.out.printf("Developer %s has knocked%n", name);
+            System.out.printf(Util.timeToString(firm.getTime())+": Developer %s has knocked%n", name);
             teamLead.knock(); //Wait until meeting, release when meeting over
             while(locked){
             	wait();
             }
-            System.out.printf("Developer %s is leaves standup%n", name);
+            System.out.printf(Util.timeToString(firm.getTime())+": Developer %s is leaves standup%n", name);
             
             // Wait until lunch
             while (firm.getTime() < FirmTime.HOUR.ms() * 4) {
@@ -58,12 +58,12 @@ public class Developer extends Thread {
                 }
             }
             lock();
-            System.out.println(firm.getTime() + ": Dev " + name + " goes on lunch.");
+            System.out.println(Util.timeToString(firm.getTime())+": Dev " + name + " goes on lunch.");
             Thread.sleep(FirmTime.MINUTE.ms() * (30 + (int) Math.random() * 30));
-            System.out.println(firm.getTime() + ": Dev " + this.name + " ends lunch.");
+            System.out.println(Util.timeToString(firm.getTime())+": Dev " + this.name + " ends lunch.");
             unlock();
 
-            System.out.printf("Developer %s will begin waiting until 4pm meeting%n", name);
+            System.out.printf(Util.timeToString(firm.getTime())+": Developer %s will begin waiting until 4pm meeting%n", name);
             while (firm.getTime() < 8 * FirmTime.HOUR.ms()) {
                 Thread.sleep(FirmTime.MINUTE.ms());
                 // Randomly asking a question
@@ -72,7 +72,7 @@ public class Developer extends Thread {
                 }
             }
             firm.attemptJoin();
-            System.out.printf("Developer %s done for the day%n", name);
+            System.out.printf(Util.timeToString(firm.getTime())+": Developer %s done for the day%n", name);
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -98,9 +98,9 @@ public class Developer extends Thread {
 
     private void askQuestion() {
         if (!askedQuestion) {
-        	System.out.println(firm.getTime()+": Dev "+name+" is asking a question");
+        	System.out.println(Util.timeToString(firm.getTime())+": Dev "+name+" is asking a question");
             this.teamLead.askedQuestion();
-        	System.out.println(firm.getTime()+": Dev "+name+"'s question was answered.");
+        	System.out.println(Util.timeToString(firm.getTime())+": Dev "+name+"'s question was answered.");
         }
     }
 
