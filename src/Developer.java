@@ -1,12 +1,10 @@
 /**
  * Developer Class
- *
+ * <p/>
  * Work on: Kocsen
  */
 
 public class Developer extends Thread {
-
-    public boolean locked = false;
 
     public long entered; // Time entered
     public boolean arrived = false;
@@ -16,15 +14,23 @@ public class Developer extends Thread {
     private Firm firm;
     private TeamLead teamLead;
 
-
-
-    public Developer(String name, Firm firm, TeamLead teamLead) {
+    public Developer(String name) {
         this.name = name;
-        this.firm = firm;
-        this.teamLead = teamLead;
         arrived = false;
         askingQuestion = false;
+    }
 
+    public void setTeamLead(TeamLead tl) {
+        this.teamLead = tl;
+    }
+
+    /**
+     * Setter for the firm
+     *
+     * @param firm
+     */
+    public void setFirm(Firm firm) {
+        this.firm = firm;
     }
 
     public void run() {
@@ -37,9 +43,13 @@ public class Developer extends Thread {
             System.out.printf("Developer %s has arrived to the workplace at %d%n", name, entered);
 
             teamLead.knock(); //Wait until meeting, release when meeting over
-            // Randomly asking a question
-            this.askQuestion();
 
+            // Randomly asking a question
+            //this.askQuestion();
+
+            while (firm.getTime() < 8 * FirmTime.HOUR.ms()) {
+                Thread.sleep(FirmTime.MINUTE.ms());
+            }
 
 
         } catch (InterruptedException e) {
@@ -47,16 +57,8 @@ public class Developer extends Thread {
         }
     }
 
-    /**
-     * Setter for the firm
-     * @param firm
-     */
-    public void setFirm(Firm firm){
-        this.firm = firm;
-    }
-
     private void askQuestion() {
-        if(!askedQuestion){
+        if (!askedQuestion) {
             this.teamLead.askedQuestion();
         }
     }
@@ -69,10 +71,4 @@ public class Developer extends Thread {
     public boolean getArrived() {
         return this.arrived;
     }
-    // Waits
-    protected Condition waitForUnlock = new Condition(){
-    	private boolean isMet(){
-			return !locked;
-		}
-	};
 }
