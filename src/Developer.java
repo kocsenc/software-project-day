@@ -49,6 +49,19 @@ public class Developer extends Thread {
             	wait();
             }
             System.out.printf("Developer %s is leaves standup%n", name);
+            
+            // Wait until lunch
+            while (firm.getTime() < FirmTime.HOUR.ms() * 4) {
+                synchronized (this) {
+                    wait(10);
+
+                }
+            }
+            lock();
+            System.out.println(firm.getTime() + ": Dev " + name + " goes on lunch.");
+            Thread.sleep(FirmTime.MINUTE.ms() * (30 + (int) Math.random() * 30));
+            System.out.println(firm.getTime() + ": Dev " + this.name + " ends lunch.");
+            unlock();
 
             System.out.printf("Developer %s will begin waiting until 4pm meeting%n", name);
             while (firm.getTime() < 8 * FirmTime.HOUR.ms()) {
@@ -85,7 +98,9 @@ public class Developer extends Thread {
 
     private void askQuestion() {
         if (!askedQuestion) {
+        	System.out.println(firm.getTime()+": Dev "+name+" is asking a question");
             this.teamLead.askedQuestion();
+        	System.out.println(firm.getTime()+": Dev "+name+"'s question was answered.");
         }
     }
 

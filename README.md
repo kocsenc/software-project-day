@@ -1,7 +1,28 @@
 Software Project day
 ===================
 
-The Problem
+Instructions:
+
+javac Main.java
+java Main
+
+Output:
+
+Common events that happen throughout the day in a Software Development Firm.
+This describes the daily activities of Project Managers, Team Leads, and
+Developers. Each event will contain the time it occured and the name of the
+employee that it involved.
+
+Example Events:
+
+	1. When a person arrives at work
+	2. When a meeting starts
+	3. When lunch is taken
+	4. When a question is asked
+	5. When a person leaves work
+
+
+The Problem:
 
 The firm at which all the following activities take place has a strict policy of opening at 8:00 and closing at 5:00.
 Employees may arrive anytime between 8:00 and 8:30, take lunch for at least 30 minutes but no more than an hour, and
