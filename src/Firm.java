@@ -10,61 +10,119 @@ import java.util.List;
 public class Firm {
 	private List<Meeting> meetings;
 	private SoftwareProjectManager suPremeManager;
-	private List<Developer> developers;
+	//private List<Developer> developers;
 	private List<TeamLead> leads;
 	private List<Thread> threadDevs;
 	private List<Thread> threadLeads;
 	private long startTime;
+	private boolean conferenceRoomFree;
+	private List<TeamLead> roomQ;
+	private long timeInQ;
+	private long lastStart;
 
 	/**
 	 * @param suPremeManager
 	 *        SoftwareProjectManager that's head of the office
 	 */
 	public Firm(SoftwareProjectManager suPremeManager) {
+		timeInQ = 0;
+		lastStart = -15;
+		this.roomQ = new ArrayList<TeamLead>();
 		this.suPremeManager = suPremeManager;
 		threadDevs.add(suPremeManager);
 		this.leads = suPremeManager.getTeamLeaders();
-		developers = new ArrayList<Developer>();
+		//developers = new ArrayList<Developer>();
+		
+		ArrayList<Thread> staff1 = new ArrayList<Thread>();
+		ArrayList<Thread> staff2 = new ArrayList<Thread>();
+		ArrayList<Thread> staff3 = new ArrayList<Thread>();
+		int count = 1;
 		for (TeamLead lead : this.leads) {
-			developers.addAll(lead.getDevelopers());
-			developers.add((Developer) lead);
+			if ( count == 1 ) {
+				staff1.add(lead);
+				staff1.addAll(lead.getDevelopers());
+			}
+			if ( count == 2 ) {
+				staff2.add(lead);
+				staff2.addAll(lead.getDevelopers());
+			}
+			if ( count == 3 ) {
+				staff3.add(lead);
+				staff3.addAll(lead.getDevelopers());
+			}
+			count ++;
+			//developers.addAll(lead.getDevelopers());
+			//developers.add((Developer) lead);
 			threadDevs.add(lead);
 			threadDevs.addAll(lead.getDevelopers());
 			threadLeads.add(lead);
 		}
 
-		// Daily standup, 8AM
-		ArrayList<Thread> staff1 = new ArrayList<Thread>(threadLeads);
-		staff1.add(suPremeManager);
+		// Team1
 		Meeting meeting1 = new Meeting(0, 300, 150, staff1);
 		meetings.add(meeting1);
 
-		// Corporate meeting, 10AM
-		ArrayList<Thread> staff2 = new ArrayList<Thread>();
-		staff2.add(suPremeManager);
+		// Team2
 		Meeting meeting2 = new Meeting(1200, 0, 600, staff2);
 		meetings.add(meeting2);
 
-		// Corporate meeting, 1PM
-		ArrayList<Thread> staff3 = new ArrayList<Thread>();
-		staff3.add(suPremeManager);
+		// Team3
 		Meeting meeting3 = new Meeting(3600, 0, 600, staff3);
 		meetings.add(meeting3);
 
 		// End of day meeting, 4PM
-		ArrayList<Thread> staff4 = new ArrayList<Thread>(threadDevs);
-		staff4.add(suPremeManager);
-		Meeting meeting4 = new Meeting(0, 300, 150, staff4);
-		meetings.add(meeting4);
+//		ArrayList<Thread> staff4 = new ArrayList<Thread>(threadDevs);
+//		staff4.add(suPremeManager);
+//		Meeting meeting4 = new Meeting(0, 300, 150, staff4);
+//		meetings.add(meeting4);
 
+	}
+	
+	private void addAllFirms() {
+		for ( Thread dev : this.threadDevs ) {
+			try {
+				((Developer)dev).setFirm(this);
+			}catch(Exception e){}
+			try {
+				((TeamLead)dev).setFirm(this);
+			}catch(Exception e){}
+			try {
+				((SoftwareProjectManager)dev).setFirm(this);
+			}catch(Exception e){}
+		}
 	}
 
 	/**
 	 * Starts the simulation
 	 */
 	public void startDay() {
+		addAllFirms();
 		startTime = System.currentTimeMillis();
 
+	}
+	
+
+
+	/**
+	 * Attempts to join a meeting in progress.  Returns false if there is no current meeting the
+	 * thread is in.  True otherwise.  
+	 * @return False if there is no current meeting the thread is in.  True otherwise.  
+	 */
+	public boolean attemptJoin() {
+		synchronized(this){
+			while ( getTime() - lastStart < FirmTime.MINUTE.ms() * 15)
+			{
+				try {
+					Thread.currentThread().wait(FirmTime.MINUTE.ms() * 15 - (getTime() - lastStart));
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			lastStart = getTime();
+		}
+		return true;
+//		Meeting meeting = currentMeeting();
+//		return meeting.attemptJoin();
 	}
 
 	/**
@@ -121,16 +179,6 @@ public class Firm {
 	}
 
 	/**
-	 * Attempts to join a meeting in progress.  Returns false if there is no current meeting the
-	 * thread is in.  True otherwise.  
-	 * @return False if there is no current meeting the thread is in.  True otherwise.  
-	 */
-	public synchronized boolean attemptJoin() {
-		Meeting meeting = currentMeeting();
-		return meeting.attemptJoin();
-	}
-
-	/**
 	 * Returns the meeting that the current thread should be in.  Null if no meeting fulfills that criterion.
 	 * @return The meeting that the current thread should be in.  Null if no meeting fulfills that criterion.
 	 */
@@ -146,8 +194,8 @@ public class Firm {
 	}
 
 	/**
-	 * Returns time since start in millliseconds.
-	 * @return Time since start in millliseconds.
+	 * Returns time since start in milliseconds.
+	 * @return Time since start in milliseconds.
 	 */
 	public synchronized long getTime() {
 		long currentTime = System.currentTimeMillis() - startTime;
