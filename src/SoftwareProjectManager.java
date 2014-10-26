@@ -63,9 +63,9 @@ public class SoftwareProjectManager extends Thread {
 	public static final int STANDUP_LENGTH_MINS = 15;
 	public static final int EXEC_MEETING_LENGTH_MINS = 60;
 	public static final int ANSWER_QUESTION_LENGTH_MINS = 10;
-	public static final int TEN_AM_MEETING = 2000;
-	public static final int TWO_PM_MEETING = 6000;
-	public static final int FOUR_PM_MEETING = 8000;
+	public static final int TEN_AM_MEETING = 1200;
+	public static final int TWO_PM_MEETING = 3600;
+	public static final int FOUR_PM_MEETING = 4800;
 
 	/**
 	 * No args constructor
@@ -223,6 +223,7 @@ public class SoftwareProjectManager extends Thread {
 		// Join 4PM Meeting
 		System.out.println("Manager attempting to join 4PM meeting");
 		firm.attemptJoin();
+		System.out.println("Manager Going home");
 	}
 
 	public void askQuestion() {
