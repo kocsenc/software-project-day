@@ -131,7 +131,7 @@ public class SoftwareProjectManager extends Thread {
 		}
 		System.out.println("SPM is out of morning stand-up");
 
-
+//
 //		// Wait for question OR next meeting (10:00AM or 2 "Hours")
 //		do {
 //			// Do I need to Answer Question?
