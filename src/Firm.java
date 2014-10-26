@@ -24,8 +24,10 @@ public class Firm {
 	 *        SoftwareProjectManager that's head of the office
 	 */
 	public Firm(SoftwareProjectManager suPremeManager) {
+		meetings = new ArrayList<Meeting>();
 		devsInBigMeeting = new ArrayList<Thread>();
 		threadDevs = new ArrayList<Thread>();
+		threadLeads = new ArrayList<Thread>();
 		firstStart = -15;
 		lastStart = -1;
 		this.suPremeManager = suPremeManager;
