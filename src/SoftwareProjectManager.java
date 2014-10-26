@@ -205,7 +205,6 @@ public class SoftwareProjectManager extends Thread {
 			((TeamLead)tl).unlock();
 		}
 		
-		
 		System.out.println(Util.timeToString(firm.getTime())+": Manager is going home");
 		alarmClock.cancel();
 	}

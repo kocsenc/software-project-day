@@ -58,9 +58,9 @@ public class Developer extends Thread {
                 }
             }
             lock();
-            System.out.println(Util.timeToString(firm.getTime())+": Dev " + name + " goes on lunch.");
+            System.out.println(Util.timeToString(firm.getTime())+": " + name + " goes on lunch.");
             Thread.sleep(FirmTime.MINUTE.ms() * (30 + (int) Math.random() * 30));
-            System.out.println(Util.timeToString(firm.getTime())+": Dev " + this.name + " ends lunch.");
+            System.out.println(Util.timeToString(firm.getTime())+": " + this.name + " ends lunch.");
             unlock();
 
             System.out.printf(Util.timeToString(firm.getTime())+": Developer %s will begin waiting until 4pm meeting%n", name);
@@ -98,9 +98,9 @@ public class Developer extends Thread {
 
     private void askQuestion() {
         if (!askedQuestion) {
-        	System.out.println(Util.timeToString(firm.getTime())+": Dev "+name+" is asking a question");
+        	System.out.println(Util.timeToString(firm.getTime())+": "+name+" is asking a question");
             this.teamLead.askedQuestion();
-        	System.out.println(Util.timeToString(firm.getTime())+": Dev "+name+"'s question was answered.");
+        	System.out.println(Util.timeToString(firm.getTime())+": "+name+"'s question was answered.");
         }
     }
 
