@@ -6,6 +6,7 @@
 
 public class Developer extends Thread {
 
+	private boolean locked = false;
     public long entered; // Time entered
     public boolean arrived = false;
     public boolean askedQuestion = false;
@@ -44,25 +45,42 @@ public class Developer extends Thread {
 
             System.out.printf("Developer %s has knocked%n", name);
             teamLead.knock(); //Wait until meeting, release when meeting over
-            System.out.printf("Developer %s is done kocking%n", name);
-
-
-            // Randomly asking a question
-            //this.askQuestion();
+            while(locked){
+            	wait();
+            }
+            System.out.printf("Developer %s is leaves standup%n", name);
 
             System.out.printf("Developer %s will begin waiting until 4pm meeting%n", name);
             while (firm.getTime() < 8 * FirmTime.HOUR.ms()) {
                 Thread.sleep(FirmTime.MINUTE.ms());
+                // Randomly asking a question
+                if(Math.random()*1000<1){
+                	this.askQuestion();
+                }
             }
             firm.attemptJoin();
             System.out.printf("Developer %s done for the day%n", name);
 
-
-
-
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public synchronized void unlock() {
+        locked = false;
+    }
+    
+
+    private Condition waitForUnlock = new Condition() {
+        @SuppressWarnings("unused")
+        private boolean isMet() {
+            return !locked;
+        }
+    };
+
+    public synchronized void lock() {
+        waitForUnlock.waitUntilMet(100);
+        locked = true;
     }
 
     private void askQuestion() {

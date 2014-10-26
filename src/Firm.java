@@ -138,9 +138,15 @@ public class Firm {
 					try {
 						wait(FirmTime.MINUTE.ms() * 15);
 					} catch (InterruptedException e) {
-						e.printStackTrace();
 					}
 					notifyAll();
+				}
+				else{
+					try {
+						//System.out.println("attending: "+Thread.currentThread().getName());
+						wait();
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 		}
