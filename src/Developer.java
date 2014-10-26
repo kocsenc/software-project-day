@@ -50,19 +50,16 @@ public class Developer extends Thread {
             }
             System.out.printf("Developer %s is leaves standup%n", name);
 
-
-            // Randomly asking a question
-            //this.askQuestion();
-
             System.out.printf("Developer %s will begin waiting until 4pm meeting%n", name);
             while (firm.getTime() < 8 * FirmTime.HOUR.ms()) {
                 Thread.sleep(FirmTime.MINUTE.ms());
+                // Randomly asking a question
+                if(Math.random()*100000<1){
+                	this.askQuestion();
+                }
             }
             firm.attemptJoin();
             System.out.printf("Developer %s done for the day%n", name);
-
-
-
 
         } catch (InterruptedException e) {
             e.printStackTrace();
