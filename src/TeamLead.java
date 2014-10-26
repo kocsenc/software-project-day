@@ -53,52 +53,38 @@ public class TeamLead extends Thread {
     public void run() {
         try {
             Thread.sleep(Util.randomInBetween(0, FirmTime.HALF_HOUR.ms()));
+
+            this.entered = firm.getTime();
+            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " arrives.");
+            manager.knock();
+
+            waitForDevs.waitUntilMet(100);
+            firm.attemptJoin();
+            Thread.sleep(15 * FirmTime.MINUTE.ms());
+            firm.doneWithRoom();
+            for (Developer dev : developers) {
+                dev.notify();
+            }
+            while (firm.getTime() < FirmTime.HOUR.ms() * 4) {
+                Thread.sleep(1000);
+            }
+            lock();
+            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes on lunch.");
+            Thread.sleep(FirmTime.MINUTE.ms() * (30 + (int) Math.random() * 30));
+            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends lunch.");
+            unlock();
+            while (firm.getTime() < FirmTime.HOUR.ms() * 8) {
+                Thread.sleep(1000);
+            }
+            // Alert manager?
+            firm.attemptJoin();
+            while (firm.getTime() - this.entered < 8 * FirmTime.HOUR.ms()) {
+                Thread.sleep(1000);
+            }
+            lock();
+            System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes home.");
         } catch (InterruptedException e1) {
         }
-        this.entered = firm.getTime();
-        System.out.println(firm.getTime() + ": TeamLead #" + this.id + " arrives.");
-        manager.knock();
-
-        waitForDevs.waitUntilMet(100);
-        firm.attemptJoin();
-        try {
-            Thread.sleep(15 * FirmTime.MINUTE.ms());
-        } catch (InterruptedException e) {
-        }
-        firm.doneWithRoom();
-        for (Developer dev : developers) {
-            dev.notify();
-        }
-        while (firm.getTime() < FirmTime.HOUR.ms() * 4) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-        }
-        lock();
-        System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes on lunch.");
-        try {
-            Thread.sleep(FirmTime.MINUTE.ms() * (30 + (int) Math.random() * 30));
-        } catch (InterruptedException e) {
-        }
-        System.out.println(firm.getTime() + ": TeamLead #" + this.id + " ends lunch.");
-        unlock();
-        while (firm.getTime() < FirmTime.HOUR.ms() * 8) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-        }
-        // Alert manager?
-        firm.attemptJoin();
-        while (firm.getTime() - this.entered < 8 * FirmTime.HOUR.ms()) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-            }
-        }
-        lock();
-        System.out.println(firm.getTime() + ": TeamLead #" + this.id + " goes home.");
     }
 
     public synchronized void unlock() {
