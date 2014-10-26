@@ -9,8 +9,8 @@ import java.util.List;
 
 public class TeamLead extends Thread {
     private static int leads = 0;
-    private final SoftwareProjectManager manager;
-    private final ArrayList<Developer> developers;
+    private SoftwareProjectManager manager;
+    private final ArrayList<Developer> developers = new ArrayList<Developer>();
     private final int id;
     public long entered;
     private int devArrived = 0;
@@ -30,12 +30,18 @@ public class TeamLead extends Thread {
         }
     };
 
-    public TeamLead(String name, SoftwareProjectManager manager, Firm firm, List<Developer> developers) {
-        this.manager = manager;
+    public TeamLead(String name, Firm firm) {
         this.firm = firm;
-        this.developers = (ArrayList<Developer>) developers;
         this.id = TeamLead.leads;
         TeamLead.leads += 1;
+    }
+    
+    public synchronized void addDeveloper(Developer dev){
+    	developers.add(dev);
+    }
+    
+    public synchronized void setManager(SoftwareProjectManager man){
+    	this.manager = man;
     }
 
     public synchronized void setFirm(Firm firm) {
