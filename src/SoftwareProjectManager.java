@@ -183,7 +183,7 @@ public class SoftwareProjectManager extends Thread {
 		
         // Wait until 4PM meeting
 		do {
-			System.out.println("Set an alarm for " + FOUR_PM_MEETING + " - " + firm.getTime() + "/" + FirmTime.HOUR.ms() + "ms");
+//			System.out.println("Set an alarm for " + FOUR_PM_MEETING + " - " + firm.getTime() + "/" + FirmTime.HOUR.ms() + "ms");
 
 			// Cancel the current alarm and create a new AlarmClock
 			if (alarm != null) {
