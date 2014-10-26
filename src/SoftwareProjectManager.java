@@ -55,12 +55,14 @@ public class SoftwareProjectManager extends Thread {
 	private List<Thread> awaitingAnswers;
 	private final Object speakingToken;
 	private final Object wakeUp;
+	private final Object wakeUp2;
 	private AlarmClock alarm;
 	public static final int STANDUP_LENGTH_MINS = 15;
 	public static final int EXEC_MEETING_LENGTH_MINS = 60;
 	public static final int ANSWER_QUESTION_LENGTH_MINS = 10;
 	public static final int TEN_AM_MEETING = 2;
 	public static final int TWO_PM_MEETING = 6;
+	public static final int FOUR_PM_MEETING = 8;
 
 	/**
 	 * No args constructor
@@ -70,6 +72,7 @@ public class SoftwareProjectManager extends Thread {
 
 		speakingToken = new Object();
 		wakeUp = new Object();
+		wakeUp2 = new Object();
 		awaitingAnswers = new ArrayList<Thread>();
 	}
 
@@ -149,7 +152,7 @@ public class SoftwareProjectManager extends Thread {
 //			alarm.start();
 //			try {
 //				synchronized(wakeUp) {
-//					System.out.println("Wait " + alarm.getDuration() + "ms 'till next meeting");
+//					System.out.println("Wait " + alarm.getDuration() + "ms 'till 10AM meeting");
 //					wakeUp.wait();
 //				}
 //			} catch (InterruptedException e) {
@@ -163,15 +166,38 @@ public class SoftwareProjectManager extends Thread {
 
 
 
-		// Start stand-up meeting
-		performStandup();
-
-		while(firm.getTime()/FirmTime.HOUR.ms() < 9) { // TODO: I thought FirmTime was going to keep track of actual time (Like, FirmTime.currentTime() return 5 for 5PM or whatever)
-
-		}
-
-		long time = firm.getTime();
-		// Leave at 5PM
+//		// Start stand-up meeting
+//		performStandup();
+//
+//		while(firm.getTime()/FirmTime.HOUR.ms() < 9) { // TODO: I thought FirmTime was going to keep track of actual time (Like, FirmTime.currentTime() return 5 for 5PM or whatever)
+//
+//		}
+//
+//		long time = firm.getTime();
+//		// Leave at 5PM
+		
+		
+        // Wait until 4PM meeting
+        do {
+			// Set an alarm until the meeting... or someone asks a question
+			if (alarm != null) {
+				alarm.turnOff();
+			}
+			// Set an alarm to wake me up
+			alarm = new AlarmClock(wakeUp2, (FOUR_PM_MEETING - (firm.getTime()/FirmTime.HOUR.ms())));
+			alarm.start();
+			try {
+				synchronized(wakeUp2) {
+					System.out.println("Wait " + alarm.getDuration() + "ms 'till 4PM meeting");
+					wakeUp2.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+        } while(firm.getTime()/FirmTime.HOUR.ms() < FOUR_PM_MEETING);
+        
+		// Join 4PM Meeting
+        firm.attemptJoin();
 	}
 
 	public void askQuestion() {
