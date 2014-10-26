@@ -54,7 +54,8 @@ public class Developer extends Thread {
             while (firm.getTime() < 8 * FirmTime.HOUR.ms()) {
                 Thread.sleep(FirmTime.MINUTE.ms());
             }
-            System.out.printf("Developer %s done waiting for 4pm meeting%n", name);
+            firm.attemptJoin();
+            System.out.printf("Developer %s done for the day%n", name);
 
 
 
