@@ -210,12 +210,15 @@ public class SoftwareProjectManager extends Thread {
 				TeamLead tl = (TeamLead) awaitingAnswers.remove(0);
 				// Lock the team leader object while we wait for the answer
 				try {
-					Thread.sleep(ANSWER_QUESTION_LENGTH_MINS);
+					Thread.sleep(ANSWER_QUESTION_LENGTH_MINS * FirmTime.MINUTE.ms());
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 				// Unlock the teamLeader so they can continue their business
 				tl.unlock();
+				synchronized (this){
+					notifyAll();
+				}
 			}
 
 			// Cancel the current alarm and create a new AlarmClock

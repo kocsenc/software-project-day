@@ -158,7 +158,7 @@ public class TeamLead extends Thread {
     public synchronized void askedQuestion() {
         // 50% chance of coming up with the answer
         this.waitForUnlock.waitUntilMet(10);
-        boolean canIAnswer = Util.randomInBetween(0, 1) != 1;
+        boolean canIAnswer = Util.randomInBetween(0, 1) == 2;
 
         // 10 minute wait only applies for the manager
         //Thread.sleep(FirmTime.MINUTE.ms() * 10);
