@@ -120,7 +120,10 @@ public class SoftwareProjectManager extends Thread {
 		// Wait until 10AM meeting
 		waitAndAnswerQuestions(TEN_AM_MEETING);
 		System.out.println(Util.timeToString(firm.getTime())+": Manager leaves for 10AM meeting");
-		firm.attemptJoin();
+		try {
+			Thread.sleep(600);
+		} catch (InterruptedException e) {
+		}
 		System.out.println(Util.timeToString(firm.getTime())+": Manager returns from 10AM meeting");
 		
 		// Wait until Lunch
@@ -130,7 +133,10 @@ public class SoftwareProjectManager extends Thread {
 		// Wait until 2PM meeting
 		waitAndAnswerQuestions(TWO_PM_MEETING);
 		System.out.println(Util.timeToString(firm.getTime())+": Manager leaves for 2PM meeting");
-		firm.attemptJoin();
+		try {
+			Thread.sleep(600);
+		} catch (InterruptedException e) {
+		}
 		System.out.println(Util.timeToString(firm.getTime())+": Manager returns from 2PM meeting");
 
 		// Wait until 4PM meeting
@@ -189,10 +195,10 @@ public class SoftwareProjectManager extends Thread {
 				synchronized(wakeUp) {
 					// Schedule a new alarm
 					alarmClock.schedule(alarm = new AlarmClockTask(wakeUp),
-							wakeTime - (firm.getTime()/FirmTime.HOUR.ms()));
+							wakeTime - (firm.getTime()));
 
 //					System.out.println("Now wait for the alarm");
-					wakeUp.wait(wakeTime - (firm.getTime()/FirmTime.HOUR.ms()));
+					wakeUp.wait(wakeTime - (firm.getTime()));
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
